@@ -14,6 +14,7 @@ require('util').inherits(S3, TileJSON);
 function S3(uri, callback) {
     this._uri = uri;
     this._cacheSolid;
+    this._cacheMasks = {};
     return TileJSON.call(this, uri, function(err, source) {
         // Increase number of connections that can be made to S3.
         // Can be specified manually in data for cases where ulimit
@@ -136,7 +137,10 @@ S3.prototype._getColor = function(z, x, y, callback) {
 };
 
 S3.prototype._loadTileMask = function(z, x, y, callback) {
-    // TODO: cache these lookups.
+    var key = z + ',' + x + ',' + y;
+    if (this._cacheMasks[key])
+        return callback(null, this._cacheMasks[key]);
+
     this._loadTile(z, x, y, function(err, buffer) {
         if (err) return callback(err);
 
@@ -156,9 +160,13 @@ S3.prototype._loadTileMask = function(z, x, y, callback) {
             mask[i] = data[pos];
         }
 
-        // TODO: Store the mask in a cache
+        // Store mask in cache. Reap cache if it grows beyond 1k objects.
+        var keys = Object.keys(this._cacheMasks);
+        if (keys.length > 1000) delete this._cacheMasks[keys[0]];
+        this._cacheMasks[key] = mask;
+
         callback(null, mask);
-    });
+    }.bind(this));
 };
 
 // Inserts a tile into the S3 store. Scheme is XYZ.
