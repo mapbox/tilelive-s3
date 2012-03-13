@@ -14,7 +14,20 @@ require('util').inherits(S3, TileJSON);
 function S3(uri, callback) {
     this._uri = uri;
     this._cacheSolid;
-    return TileJSON.call(this, uri, callback);
+    return TileJSON.call(this, uri, function(err, source) {
+        // Increase number of connections that can be made to S3.
+        // Can be specified manually in data for cases where ulimit
+        // has been pushed higher.
+        // @TODO consider using node-posix to determine the best value here.
+        // @TODO this may belong upstream in node-tilejson.
+        if (source && source.data) ['tiles', 'grids'].forEach(function(key) {
+            if (!source.data[key] || !source.data[key].length) return;
+            var hostname = url.parse(source.data[key][0]).hostname;
+            var agent = http.globalAgent || http.getAgent(hostname, '80');
+            agent.maxSockets = source.data.maxSockets || 128;
+        });
+        callback(err, source);
+    });
 };
 
 S3.registerProtocols = function(tilelive) {
@@ -226,14 +239,6 @@ S3.prototype.startWriting = function(callback) {
         secret: this.data.awsSecret,
         bucket: this.uri.hostname.split('.')[0]
     });
-
-    // Increase number of connections that can be made to S3.
-    // Can be specified manually in data for cases where ulimit
-    // has been pushed higher.
-    // @TODO consider using node-posix to determine the best value here.
-    var http = require('http');
-    var agent = http.globalAgent || http.getAgent(uri.hostname, '80');
-    agent.maxSockets = this.data.maxSockets || 128;
 
     return callback();
 };
