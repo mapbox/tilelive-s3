@@ -1,0 +1,11 @@
+{
+    "name": "test",
+    "scheme": "xyz",
+    "tiles": [ "test/{z}/{x}/{y}.png" ],
+    "minzoom": 0,
+    "maxzoom": 4,
+    "bounds": [ -180, -85, 180, 85 ],
+    "center": [ 0, 0, 3 ],
+    "maskLevel": 3,
+    "maskSolid": [3, 6, 7]
+}
