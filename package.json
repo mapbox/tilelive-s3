@@ -3,13 +3,12 @@
     "version": "0.0.1",
     "dependencies": {
         "knox": "0.0.x",
-        "tilejson": "0.1.x",
-        "canvas": "~0.10.3"
+        "tilejson": "0.1.x"
     },
     "devDependencies": {
         "mocha": "~0.14"
     },
-    "main": "./index.js",
+    "main": "./lib/index.js",
     "scripts": {
         "test": "mocha -R spec"
     }
