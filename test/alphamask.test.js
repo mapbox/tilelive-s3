@@ -2,10 +2,6 @@ var assert = require('assert');
 var fs = require('fs');
 var S3 = require('..');
 
-
-var fs = require('fs');
-var S3 = require('..');
-
 // Mock tile loading.
 function _loadTileFS(z, x, y, callback) {
     fs.readFile('./test/fixtures/' + this.data.name + '/' + z + '/' + x + '/' + y + '.png', function(err, buffer) {
