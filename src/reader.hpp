@@ -1,5 +1,5 @@
-#ifndef NODE_BLEND_SRC_READER_H
-#define NODE_BLEND_SRC_READER_H
+#ifndef NODE_DECODE_SRC_READER_H
+#define NODE_DECODE_SRC_READER_H
 
 #include <png.h>
 #include <zlib.h>

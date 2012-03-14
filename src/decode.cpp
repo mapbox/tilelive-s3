@@ -13,7 +13,7 @@ void freeBuffer(char *data, void *hint) {
 }
 
 WORKER_BEGIN(Work_Decode) {
-    BlendBaton* baton = static_cast<BlendBaton*>(req->data);
+    DecodeBaton* baton = static_cast<DecodeBaton*>(req->data);
 
     Image *image = baton->image.get();
     std::auto_ptr<ImageReader> layer(ImageReader::create(image->data, image->dataLength));
@@ -59,7 +59,6 @@ WORKER_BEGIN(Work_Decode) {
     image->height = layer->height;
     image->reader = layer;
 
-    // Now blend images.
     int pixels = baton->width * baton->height;
     if (pixels <= 0) {
         std::ostringstream msg;
@@ -99,7 +98,7 @@ WORKER_BEGIN(Work_Decode) {
 
 WORKER_BEGIN(Work_AfterDecode) {
     HandleScope scope;
-    BlendBaton* baton = static_cast<BlendBaton*>(req->data);
+    DecodeBaton* baton = static_cast<DecodeBaton*>(req->data);
 
     if (!baton->message.length() && baton->result) {
         Local<Array> warnings = Array::New();
@@ -138,7 +137,7 @@ WORKER_BEGIN(Work_AfterDecode) {
 Handle<Value> Decode(const Arguments& args) {
     HandleScope scope;
 
-    std::auto_ptr<BlendBaton> baton(new BlendBaton());
+    std::auto_ptr<DecodeBaton> baton(new DecodeBaton());
 
     Local<Object> options;
     if (args.Length() == 0) {

@@ -1,5 +1,5 @@
-#ifndef NODE_DECODE_SRC_BLEND_H
-#define NODE_DECODE_SRC_BLEND_H
+#ifndef NODE_DECODE_SRC_DECODE_H
+#define NODE_DECODE_SRC_DECODE_H
 
 #include <v8.h>
 #include <node.h>
@@ -58,12 +58,12 @@ typedef std::tr1::shared_ptr<Image> ImagePtr;
 #define TYPE_EXCEPTION(message)                                                \
     ThrowException(Exception::TypeError(String::New(message)))
 
-v8::Handle<v8::Value> Blend(const v8::Arguments& args);
-WORKER_BEGIN(Work_Blend);
-WORKER_BEGIN(Work_AfterBlend);
+v8::Handle<v8::Value> Decode(const v8::Arguments& args);
+WORKER_BEGIN(Work_Decode);
+WORKER_BEGIN(Work_AfterDecode);
 
 
-struct BlendBaton {
+struct DecodeBaton {
 #if NODE_MINOR_VERSION >= 5 || NODE_MAJOR_VERSION > 0
     uv_work_t request;
 #endif
@@ -79,7 +79,7 @@ struct BlendBaton {
     unsigned char* result;
     size_t resultLength;
 
-    BlendBaton() :
+    DecodeBaton() :
         width(0),
         height(0),
         result(NULL),
@@ -93,7 +93,7 @@ struct BlendBaton {
 #endif
     }
 
-    ~BlendBaton() {
+    ~DecodeBaton() {
         (*image).buffer.Dispose();
 
 #if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION <= 4
