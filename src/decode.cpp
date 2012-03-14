@@ -15,8 +15,6 @@ void freeBuffer(char *data, void *hint) {
 WORKER_BEGIN(Work_Decode) {
     BlendBaton* baton = static_cast<BlendBaton*>(req->data);
 
-    //bool alpha = true;
-    //Image *image = &**rit;
     Image *image = baton->image.get();
     std::auto_ptr<ImageReader> layer(ImageReader::create(image->data, image->dataLength));
 
@@ -32,18 +30,6 @@ WORKER_BEGIN(Work_Decode) {
     // The first image that is in the viewport sets the width/height, if not user supplied.
     if (baton->width <= 0) baton->width = std::max(0, visibleWidth);
     if (baton->height <= 0) baton->height = std::max(0, visibleHeight);
-
-    // Short-circuit when we're not reencoding.
-    /*if (size == 0 && !layer->alpha && !baton->reencode &&
-        image->x == 0 && image->y == 0 &&
-        (int)layer->width == baton->width && (int)layer->height == baton->height)
-    {
-        baton->result = (unsigned char *)malloc(image->dataLength);
-        assert(baton->result);
-        memcpy(baton->result, image->data, image->dataLength);
-        baton->resultLength = image->dataLength;
-        WORKER_END();
-    }*/
 
     if (!layer->decode()) {
         // Decoding failed.

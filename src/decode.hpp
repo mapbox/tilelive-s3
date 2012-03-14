@@ -73,27 +73,17 @@ struct BlendBaton {
     std::string message;
     std::vector<std::string> warnings;
 
-    int quality;
-    bool reencode;
     int width;
     int height;
-    unsigned int matte;
-    int compression;
 
     unsigned char* result;
     size_t resultLength;
-    size_t max;
 
     BlendBaton() :
-        quality(0),
-        reencode(false),
         width(0),
         height(0),
-        matte(0),
-        compression(Z_DEFAULT_COMPRESSION),
         result(NULL),
-        resultLength(0),
-        max(0)
+        resultLength(0)
     {
 #if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION <= 4
         ev_ref(EV_DEFAULT_UC);

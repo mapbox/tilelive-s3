@@ -32,7 +32,6 @@ if Options.platform == 'darwin':
     # X11 has png headers
     png_search_paths.insert(0, '/usr/X11')
 
-
 def set_options(opt):
     opt.tool_options("compiler_cxx")
     opt.tool_options('misc')
@@ -86,7 +85,8 @@ def configure(conf):
 
 def build(bld):
     obj = bld.new_task_gen("cxx", "shlib", "node_addon")
-    obj.cxxflags = ["-O3", "-g", "-pedantic", "-D_FILE_OFFSET_BITS=64", "-D_LARGEFILE_SOURCE", "-Wall"]
+    # "-fcatch-undefined-behavior","-ftrapv","-fwrapv"
+    obj.cxxflags = ["-O3", "-g", "-pedantic","-D_FILE_OFFSET_BITS=64", "-D_LARGEFILE_SOURCE", "-Wall"]
     obj.target = TARGET
     obj.source = ["src/reader.cpp", "src/decode.cpp",]
     obj.uselib = ["PNG"]
