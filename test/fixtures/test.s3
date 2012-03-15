@@ -6,6 +6,10 @@
     "maxzoom": 4,
     "bounds": [ -180, -85, 180, 85 ],
     "center": [ 0, 0, 3 ],
+    "awsKey": "XXXXXXXX",
+    "awsSecret": "XXXXXXXXXXXXXXXX",
     "maskLevel": 3,
-    "maskSolid": [3, 6, 7]
+    "maskSolid": [3, 6, 7],
+    "maxSockets": 256,
+    "retry": true
 }
