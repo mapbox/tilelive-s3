@@ -86,7 +86,7 @@ def configure(conf):
 def build(bld):
     obj = bld.new_task_gen("cxx", "shlib", "node_addon")
     # "-fcatch-undefined-behavior","-ftrapv","-fwrapv"
-    obj.cxxflags = ["-O3", "-g", "-pedantic","-D_FILE_OFFSET_BITS=64", "-D_LARGEFILE_SOURCE", "-Wall"]
+    obj.cxxflags = ["-O3", "-g","-D_FILE_OFFSET_BITS=64", "-D_LARGEFILE_SOURCE", "-Wall"]
     obj.target = TARGET
     obj.source = ["src/reader.cpp", "src/decode.cpp",]
     obj.uselib = ["PNG"]
