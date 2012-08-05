@@ -6,7 +6,7 @@
         "tilejson": "0.1.x"
     },
     "devDependencies": {
-        "mocha": "~0.14"
+        "mocha": "*"
     },
     "main": "./lib/index.js",
     "scripts": {
