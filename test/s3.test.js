@@ -1,11 +1,14 @@
 var assert = require('assert');
+var path = require('path');
 var fs = require('fs');
 var S3 = require('..');
+var fixtures = path.resolve(__dirname + '/fixtures');
 
 // Mock tile loading.
 function _loadTileFS(z, x, y, callback) {
-    fs.readFile('./test/fixtures/' + this.data.name + '/' + z + '/' + x + '/' + y + '.png', function(err, buffer) {
-        if (err) callback(err);
+    fs.readFile(fixtures + '/' + this.data.name + '/' + z + '/' + x + '/' + y + '.png', function(err, buffer) {
+        if (err && err.code === 'ENOENT') callback(new Error('Tile does not exist'));
+        else if (err) callback(err);
         else callback(err, buffer, {
             'Content-Type': 'image/png',
             'Content-Length': buffer.length
@@ -16,7 +19,7 @@ function _loadTileFS(z, x, y, callback) {
 var s3;
 before(function(done) {
     new S3({
-        pathname: './test/fixtures/test.s3',
+        pathname: fixtures + '/test.s3',
     }, function(err, source) {
         if (err) return done(err);
         s3 = source;
@@ -25,12 +28,11 @@ before(function(done) {
     });
 });
 
-
 describe('alpha masks', function() {
     it('should load the alpha mask for a tile', function(done) {
         s3._loadTileMask(3, 6, 5, function(err, mask) {
             if (err) throw err;
-            var reference = fs.readFileSync('./test/fixtures/test/3/6/5.mask');
+            var reference = fs.readFileSync(fixtures + '/test/3/6/5.mask');
             assert.deepEqual(reference, mask);
             done();
         });
@@ -67,7 +69,7 @@ describe('loading a tile', function() {
     it('should return a unique tile', function(done) {
         s3.getTile(4, 12, 11, function(err, tile) {
             if (err) throw err;
-            var reference = fs.readFileSync('./test/fixtures/test/4/12/11.png');
+            var reference = fs.readFileSync(fixtures + '/test/4/12/11.png');
             assert.deepEqual(reference, tile);
             done();
         });
@@ -84,8 +86,56 @@ describe('loading a tile', function() {
     it('should return a solid tile', function(done) {
         s3.getTile(4, 12, 13, function(err, tile) {
             if (err) throw err;
-            var reference = fs.readFileSync('./test/fixtures/test/3/6/7.png');
+            var reference = fs.readFileSync(fixtures + '/test/3/6/7.png');
             assert.deepEqual(tile, reference);
+            done();
+        });
+    });
+});
+
+var nf;
+before(function(done) {
+    new S3({
+        pathname: fixtures + '/notfound.s3',
+    }, function(err, source) {
+        if (err) return done(err);
+        nf = source;
+        nf._loadTile = _loadTileFS;
+        done();
+    });
+});
+
+describe('notfound', function() {
+    it('should return a unique tile', function(done) {
+        nf.getTile(4, 12, 11, function(err, tile) {
+            if (err) throw err;
+            var reference = fs.readFileSync(fixtures + '/test/4/12/11.png');
+            assert.deepEqual(reference, tile);
+            done();
+        });
+    });
+
+    it('should return error tile', function(done) {
+        nf.getTile(0, 255, 255, function(err, tile) {
+            if (err) throw err;
+            var reference = fs.readFileSync(fixtures + '/test/3/6/7.png');
+            assert.deepEqual(tile, reference);
+            done();
+        });
+    });
+});
+
+describe('info', function() {
+    it('should not include custom keys', function(done) {
+        nf.getInfo(function(err, info) {
+            if (err) throw err;
+            assert.ok(!('awsKey' in info));
+            assert.ok(!('awsSecret' in info));
+            assert.ok(!('notFound' in info));
+            assert.ok(!('maskLevel' in info));
+            assert.ok(!('maskSolid' in info));
+            assert.ok(!('maxSockets' in info));
+            assert.ok(!('retry' in info));
             done();
         });
     });
