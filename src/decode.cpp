@@ -7,6 +7,8 @@
 using namespace v8;
 using namespace node;
 
+namespace tilelive_s3 {
+
 void freeBuffer(char *data, void *hint) {
     free(data);
     data = NULL;
@@ -182,4 +184,6 @@ extern "C" void init(Handle<Object> target) {
         String::NewSymbol(PNG_LIBPNG_VER_STRING),
         static_cast<PropertyAttribute>(ReadOnly | DontDelete)
     );
+}
+
 }

@@ -27,6 +27,7 @@
     #define QUEUE_WORK(baton, worker, after)    uv_queue_work(uv_default_loop(), &(baton)->request, (worker), (after));
 #endif
 
+namespace tilelive_s3 {
 
 typedef v8::Persistent<v8::Object> PersistentObject;
 
@@ -105,3 +106,5 @@ struct DecodeBaton {
 };
 
 #endif
+
+}

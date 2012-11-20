@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 
+namespace tilelive_s3 {
+
 class ImageReader {
 public:
     virtual bool decode() {
@@ -60,5 +62,7 @@ protected:
     png_structp png;
     png_infop info;
 };
+
+}
 
 #endif

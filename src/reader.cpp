@@ -2,6 +2,8 @@
 
 #include <exception>
 
+namespace tilelive_s3 {
+
 PNGImageReader::PNGImageReader(unsigned char* src, size_t len) :
     ImageReader(src, len), depth(0), color(-1) {
     // Decode PNG header.
@@ -115,4 +117,6 @@ ImageReader* ImageReader::create(unsigned char* src, size_t len) {
     } else {
         return new ImageReader("Unknown image format");
     }
+}
+
 }
