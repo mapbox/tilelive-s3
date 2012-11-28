@@ -3,7 +3,7 @@
     "version": "0.3.3",
     "dependencies": {
         "knox": "0.4.x",
-        "tilejson": "0.3.x"
+        "tilejson": "~0.3.2"
     },
     "devDependencies": {
         "mocha": "*"
