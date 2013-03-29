@@ -2,6 +2,7 @@ var assert = require('assert');
 var path = require('path');
 var fs = require('fs');
 var S3 = require('..');
+var knox = require('knox');
 var fixtures = path.resolve(__dirname + '/fixtures');
 
 // Mock tile loading.
@@ -136,6 +137,51 @@ describe('info', function() {
             assert.ok(!('maskSolid' in info));
             assert.ok(!('maxSockets' in info));
             assert.ok(!('retry' in info));
+            done();
+        });
+    });
+});
+
+describe('credentials', function() {
+    it('should create client from data credentials', function(done) {
+        new S3({
+            data: {
+                tiles: [ "http://dummy-bucket.s3.amazonaws.com/test/{z}/{x}/{y}.png" ],
+                awsKey: "XXXXXXXX",
+                awsSecret: "XXXXXXXXXXXXXXXX"
+            }
+        }, function(err, source) {
+            if (err) return done(err);
+            assert.ok(!!source.client);
+            done();
+        });
+    });
+    it('should create client from uri credentials', function(done) {
+        new S3({
+            data: {
+                tiles: [ "http://dummy-bucket.s3.amazonaws.com/test/{z}/{x}/{y}.png" ]
+            },
+            awsKey: "XXXXXXXX",
+            awsSecret: "XXXXXXXXXXXXXXXX"
+        }, function(err, source) {
+            if (err) return done(err);
+            assert.ok(!!source.client);
+            done();
+        });
+    });
+    it('should use client passed in via uri', function(done) {
+        new S3({
+            data: {
+                tiles: [ "http://dummy-bucket.s3.amazonaws.com/test/{z}/{x}/{y}.png" ]
+            },
+            client: knox.createClient({
+                bucket: "dummy-bucket",
+                key: "XXXXXXXX",
+                secret: "XXXXXXXXXXXXXXXX"
+            })
+        }, function(err, source) {
+            if (err) return done(err);
+            assert.ok(!!source.client);
             done();
         });
     });
