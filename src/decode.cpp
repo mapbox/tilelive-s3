@@ -170,7 +170,7 @@ Handle<Value> Decode(const Arguments& args) {
     image->dataLength = node::Buffer::Length(image->buffer);
     baton->image = image;
 
-    QUEUE_WORK(baton.release(), Work_Decode, Work_AfterDecode);
+    QUEUE_WORK(baton.release(), Work_Decode, (uv_after_work_cb)Work_AfterDecode);
 
     return scope.Close(Undefined());
 }
@@ -186,4 +186,5 @@ extern "C" void init(Handle<Object> target) {
     );
 }
 
+NODE_MODULE(decoder, init);
 }
