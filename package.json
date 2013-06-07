@@ -3,7 +3,7 @@
     "version": "0.5.4",
     "dependencies": {
         "knox": "0.6.x",
-        "tilejson": "https://github.com/mapbox/tilejson/tarball/node-v0.10.x"
+        "tilejson": "https://github.com/mapbox/node-tilejson/tarball/node-v0.10.x"
     },
     "repository"   :  {
              "type" : "git",
