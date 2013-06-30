@@ -1,6 +1,6 @@
 {
     "name": "tilelive-s3",
-    "version": "0.5.4",
+    "version": "0.5.5",
     "dependencies": {
         "knox": "0.6.x",
         "tilejson": "https://github.com/mapbox/node-tilejson/tarball/node-v0.10.x"
