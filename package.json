@@ -10,7 +10,8 @@
     },
     "main": "./lib/index.js",
     "scripts": {
-        "test": "mocha -R spec"
+        "test": "mocha -R spec",
+        "install": "node-waf configure build"
     },
     "engines": {
         "node": ">= 0.4 && < 0.9.0"
