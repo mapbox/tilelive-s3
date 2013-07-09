@@ -1,0 +1,11 @@
+{
+    "name": "vector",
+    "scheme": "xyz",
+    "tiles": [ "vector/{z}.{x}.{y}.vector.pbf" ],
+    "format": "pbf",
+    "minzoom": 0,
+    "maxzoom": 2,
+    "maskLevel": 1,
+    "bounds": [ -180, -85, 180, 85 ],
+    "center": [ 0, 0, 0 ]
+}
