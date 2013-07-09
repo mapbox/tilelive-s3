@@ -7,7 +7,7 @@ var fixtures = path.resolve(__dirname + '/fixtures');
 
 // Mock tile loading.
 function _loadTileFS(z, x, y, callback) {
-    fs.readFile(fixtures + '/' + this.data.name + '/' + z + '/' + x + '/' + y + '.png', function(err, buffer) {
+    fs.readFile(fixtures + '/' + this.data.tiles[0].replace('{z}',z).replace('{x}',x).replace('{y}',y), function(err, buffer) {
         if (err && err.code === 'ENOENT') callback(new Error('Tile does not exist'));
         else if (err) callback(err);
         else callback(err, buffer, {
@@ -18,6 +18,7 @@ function _loadTileFS(z, x, y, callback) {
 };
 
 var s3;
+var vt;
 before(function(done) {
     new S3({
         pathname: fixtures + '/test.s3',
@@ -25,6 +26,16 @@ before(function(done) {
         if (err) return done(err);
         s3 = source;
         s3._loadTile = _loadTileFS;
+        done();
+    });
+});
+before(function(done) {
+    new S3({
+        pathname: fixtures + '/vector.s3',
+    }, function(err, source) {
+        if (err) return done(err);
+        vt = source;
+        vt._loadTile = _loadTileFS;
         done();
     });
 });
@@ -89,6 +100,23 @@ describe('loading a tile', function() {
             if (err) throw err;
             var reference = fs.readFileSync(fixtures + '/test/3/6/7.png');
             assert.deepEqual(tile, reference);
+            done();
+        });
+    });
+});
+
+describe('vector tile', function() {
+    it('should return a vt', function(done) {
+        vt.getTile(0, 0, 0, function(err, tile) {
+            if (err) throw err;
+            var reference = fs.readFileSync(fixtures + '/vector/0.0.0.vector.pbf');
+            assert.deepEqual(reference, tile);
+            done();
+        });
+    });
+    it('should err 404', function(done) {
+        vt.getTile(2, 0, 0, function(err, tile) {
+            assert.equal(err.message, 'Tile does not exist');
             done();
         });
     });
