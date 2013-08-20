@@ -1,3 +1,6 @@
+// Set env key/secret before requiring tilelive-s3.
+process.env.HOME = __dirname + '/fixtures';
+
 var assert = require('assert');
 var path = require('path');
 var fs = require('fs');
@@ -171,16 +174,20 @@ describe('info', function() {
 });
 
 describe('credentials', function() {
-    it('should create client from data credentials', function(done) {
+    it('should ignore data credentials', function(done) {
         new S3({
             data: {
                 tiles: [ "http://dummy-bucket.s3.amazonaws.com/test/{z}/{x}/{y}.png" ],
-                awsKey: "XXXXXXXX",
-                awsSecret: "XXXXXXXXXXXXXXXX"
-            }
+                awsKey: "DATAKEY",
+                awsSecret: "DATASECRET"
+            },
+            awsKey: "URIKEY",
+            awsSecret: "URISECRET"
         }, function(err, source) {
             if (err) return done(err);
             assert.ok(!!source.client);
+            assert.equal('URIKEY', source.client.key);
+            assert.equal('URISECRET', source.client.secret);
             done();
         });
     });
@@ -189,11 +196,41 @@ describe('credentials', function() {
             data: {
                 tiles: [ "http://dummy-bucket.s3.amazonaws.com/test/{z}/{x}/{y}.png" ]
             },
-            awsKey: "XXXXXXXX",
-            awsSecret: "XXXXXXXXXXXXXXXX"
+            awsKey: "URIKEY",
+            awsSecret: "URISECRET"
         }, function(err, source) {
             if (err) return done(err);
             assert.ok(!!source.client);
+            assert.equal('URIKEY', source.client.key);
+            assert.equal('URISECRET', source.client.secret);
+            done();
+        });
+    });
+    it('should create client from .s3cfg credentials', function(done) {
+        new S3({
+            data: {
+                tiles: [ "http://dummy-bucket.s3.amazonaws.com/test/{z}/{x}/{y}.png" ]
+            }
+        }, function(err, source) {
+            if (err) return done(err);
+            assert.ok(!!source.client);
+            assert.equal('S3CFGKEY', source.client.key);
+            assert.equal('S3CFGSECRET', source.client.secret);
+            done();
+        });
+    });
+    it('should create client from env credentials', function(done) {
+        process.env.AWS_KEY = 'ENVKEY';
+        process.env.AWS_SECRET = 'ENVSECRET';
+        new S3({
+            data: {
+                tiles: [ "http://dummy-bucket.s3.amazonaws.com/test/{z}/{x}/{y}.png" ]
+            }
+        }, function(err, source) {
+            if (err) return done(err);
+            assert.ok(!!source.client);
+            assert.equal('ENVKEY', source.client.key);
+            assert.equal('ENVSECRET', source.client.secret);
             done();
         });
     });
@@ -204,12 +241,14 @@ describe('credentials', function() {
             },
             client: knox.createClient({
                 bucket: "dummy-bucket",
-                key: "XXXXXXXX",
-                secret: "XXXXXXXXXXXXXXXX"
+                key: "CLIENTKEY",
+                secret: "CLIENTSECRET"
             })
         }, function(err, source) {
             if (err) return done(err);
             assert.ok(!!source.client);
+            assert.equal('CLIENTKEY', source.client.key);
+            assert.equal('CLIENTSECRET', source.client.secret);
             done();
         });
     });
