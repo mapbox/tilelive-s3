@@ -1,0 +1,11 @@
+language: node_js
+node_js:
+  - "0.8"
+  - "0.6"
+
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install libjpeg8 libjpeg8-dev libpng-dev
+
+before_script:
+  - npm install mocha
