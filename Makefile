@@ -1,8 +1,7 @@
 build:
-	node-waf build
+	`npm explore npm -g -- pwd`/bin/node-gyp-bin/node-gyp build
 
 clean:
-	node-waf clean
 	@rm -rf ./lib/*.node ./build
 
 test: build
