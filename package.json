@@ -2,8 +2,8 @@
     "name": "tilelive-s3",
     "version": "0.7.1",
     "dependencies": {
-        "knox": "0.5.x",
-        "tilejson": "0.4.x"
+        "knox": "0.8.x",
+        "tilejson": "0.5.x"
     },
     "devDependencies": {
         "mocha": "*"
