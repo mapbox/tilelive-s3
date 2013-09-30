@@ -255,7 +255,7 @@ describe('credentials', function() {
 });
 
 describe('error', function() {
-    it('should fail gracefully', function(done) {
+    it('source load error should fail gracefully', function(done) {
         new S3({}, function(err, source) {
             assert.ok(err);
             assert.equal('Invalid URI ', err.message);
