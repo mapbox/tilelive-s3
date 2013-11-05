@@ -1,7 +1,6 @@
 #include "decode.hpp"
 
 #include <sstream>
-#include <memory>
 #include <cstring>
 
 using namespace v8;

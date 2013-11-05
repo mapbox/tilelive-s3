@@ -1,6 +1,7 @@
 #ifndef NODE_DECODE_SRC_DECODE_H
 #define NODE_DECODE_SRC_DECODE_H
 
+#include "mavericks_clang_shim.hpp"
 #include <v8.h>
 #include <node.h>
 #include <node_version.h>
@@ -12,7 +13,6 @@
 
 #include <string>
 #include <vector>
-#include <tr1/memory>
 
 #include "reader.hpp"
 
@@ -47,7 +47,7 @@ struct Image {
     std::auto_ptr<ImageReader> reader;
 };
 
-typedef std::tr1::shared_ptr<Image> ImagePtr;
+typedef HASH_NAMESPACE::shared_ptr<Image> ImagePtr;
 
 #define TRY_CATCH_CALL(context, callback, argc, argv)                          \
 {   v8::TryCatch try_catch;                                                    \
