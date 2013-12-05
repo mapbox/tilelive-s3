@@ -1,0 +1,5 @@
+{
+    "grids": ["http://mapbox-carmen.s3.amazonaws.com/dev/01-ne.country/{z}/{x}/{y}.grid.json"],
+    "geocoder_data": "http://mapbox-carmen.s3.amazonaws.com/dev/01-ne.country",
+    "maxzoom": 8
+}
