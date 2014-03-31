@@ -6,15 +6,14 @@ env:
   matrix:
     - NODE_NVM_VERSION="0.10"
     - NODE_NVM_VERSION="0.8"
+  global:
+    - node_pre_gyp_accessKeyId: AKIAJBPMCF2RIVXM3O7Q
+    - secure: KYec4ATF0Lh43GCieRaVSxmNz0EVuRu1p00sJK1DWkF21aN7PKqsRpgb4B5Yk4cenDJtNCzBQKFO7RkY6ETJgSAkwcT/IGdl/xkVXdhevEXU3qmz1pOn4d4g/rVGn5bGDw1FUZQf5tMopn1dVsewzJydP6Xpj37gycuAvBNQaNA=
 
 before_install:
   - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
   - sudo apt-get update -y
   - sudo apt-get install -y pkg-config make gcc-4.8 g++-4.8
-  - wget 'http://prdownloads.sourceforge.net/libpng/libpng-1.2.51.tar.gz?download' -O /tmp/libpng-1.2.51.tar.gz
-  - wget 'http://prdownloads.sourceforge.net/libpng/libpng-1.2.51.tar.gz.asc?download' -O /tmp/libpng-1.2.51.tar.gz.asc
-  - gpg --keyserver pgp.mit.edu --recv-keys A16C640F
-  - gpg --verify /tmp/libpng-1.2.51.tar.gz.asc
   - ./test/build-static.sh
   - git clone https://github.com/creationix/nvm.git ../.nvm
   - source ../.nvm/nvm.sh
@@ -22,4 +21,13 @@ before_install:
   - nvm use $NODE_NVM_VERSION
   - node --version
   - npm --version
-  - npm install mocha
+
+install:
+  - export CXX=g++-4.8
+  - npm install
+
+script:
+  - npm test
+
+after_success:
+  - ./test/travis-publish.sh
