@@ -1,7 +1,6 @@
 #!/bin/bash
 
 set -e
-export CXXFLAGS="$CXXFLAGS -fPIC"
 export CFLAGS="$CFLAGS -fPIC"
 
 build_dir=$(pwd)
