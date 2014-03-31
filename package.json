@@ -18,7 +18,7 @@
         "node": ">= 0.6.13 < 0.11.0"
     },
     "binary": {
-        "module_name": "tilelive-s3",
+        "module_name": "tilelive_s3",
         "module_path": "./lib/binding/",
         "host": "https://mapbox-node-binary.s3.amazonaws.com",
         "remote_path": "./{module_name}/v{version}",
