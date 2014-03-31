@@ -41,7 +41,7 @@
           '<!@(pkg-config libpng --cflags)'
       ],
       'libraries':[
-        '<!@(pkg-config libpng --libs)'
+        '<!@(pkg-config libpng --libs --static)'
       ]
   },
   'targets': [
