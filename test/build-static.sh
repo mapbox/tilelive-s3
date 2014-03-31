@@ -14,8 +14,11 @@ wget 'http://prdownloads.sourceforge.net/libpng/libpng-1.2.51.tar.gz.asc?downloa
 gpg --keyserver pgp.mit.edu --recv-keys A16C640F
 gpg --verify ./tmp/libpng-1.2.51.tar.gz.asc
 
-tar xzf libpng-1.2.51.tar.gz -C ./tmp
-cd ./tmp/libpng-1.2.51
+ls -l
+pwd
+cd ./tmp
+tar xzf libpng-1.2.51.tar.gz
+cd ./libpng-1.2.51
 ./configure --enable-shared --disable-shared --disable-dependency-tracking
 make
 sudo make install
