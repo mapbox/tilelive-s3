@@ -18,4 +18,4 @@ cd /tmp/libpng-1.2.51
 ./configure --enable-shared --disable-shared --disable-dependency-tracking
 make && make install
 
-cd build_dir
+cd $build_dir
