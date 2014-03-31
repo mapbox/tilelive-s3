@@ -11,7 +11,11 @@ before_install:
   - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
   - sudo apt-get update -y
   - sudo apt-get install -y pkg-config make gcc-4.8 g++-4.8
-  - sudo ./test/build-static.sh
+  - wget 'http://prdownloads.sourceforge.net/libpng/libpng-1.2.51.tar.gz?download' -O /tmp/libpng-1.2.51.tar.gz
+  - wget 'http://prdownloads.sourceforge.net/libpng/libpng-1.2.51.tar.gz.asc?download' -O /tmp/libpng-1.2.51.tar.gz.asc
+  - gpg --keyserver pgp.mit.edu --recv-keys A16C640F
+  - gpg --verify /tmp/libpng-1.2.51.tar.gz.asc
+  - ./test/build-static.sh
   - git clone https://github.com/creationix/nvm.git ../.nvm
   - source ../.nvm/nvm.sh
   - nvm install $NODE_NVM_VERSION

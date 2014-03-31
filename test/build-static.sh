@@ -8,14 +8,15 @@ export CFLAGS="$CFLAGS -fPIC"
 
 build_dir=$(pwd)
 
-wget http://prdownloads.sourceforge.net/libpng/libpng-1.2.51.tar.gz?download /tmp/libpng-1.2.51.tar.gz
-wget http://prdownloads.sourceforge.net/libpng/libpng-1.2.51.tar.gz.asc?download /tmp/libpng-1.2.51.tar.gz.asc
+wget 'http://prdownloads.sourceforge.net/libpng/libpng-1.2.51.tar.gz?download' -O ./tmp/libpng-1.2.51.tar.gz
+wget 'http://prdownloads.sourceforge.net/libpng/libpng-1.2.51.tar.gz.asc?download' -O ./tmp/libpng-1.2.51.tar.gz.asc
 gpg --keyserver pgp.mit.edu --recv-keys A16C640F
-gpg --verify /tmp/libpng-1.2.51.tar.gz.asc
+gpg --verify ./tmp/libpng-1.2.51.tar.gz.asc
 
-tar xzv libpng-1.2.51.tar.gz -C /tmp
-cd /tmp/libpng-1.2.51
+tar xzf libpng-1.2.51.tar.gz -C ./tmp
+cd ./tmp/libpng-1.2.51
 ./configure --enable-shared --disable-shared --disable-dependency-tracking
-make && make install
+make
+sudo make install
 
 cd $build_dir
