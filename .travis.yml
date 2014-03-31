@@ -1,12 +1,23 @@
-language: node_js
-node_js:
-  - "0.8"
-  - "0.6"
-  - "0.10"
+language: cpp
+compiler:
+  - gcc
+
+env:
+  matrix:
+    - NODE_NVM_VERSION="0.10"
+    - NODE_NVM_VERSION="0.8"
 
 before_install:
-  - sudo apt-get update
-  - sudo apt-get install libjpeg8 libjpeg8-dev libpng-dev
+  - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
+  - sudo apt-get update -y
+  - sudo apt-get install -y pkg-config make gcc-4.8 g++-4.8
+  - sudo ./test/build-static.sh
 
 before_script:
+  - git clone https://github.com/creationix/nvm.git ../.nvm
+  - source ../.nvm/nvm.sh
+  - nvm install $NODE_NVM_VERSION
+  - nvm use $NODE_NVM_VERSION
+  - node --version
+  - npm --version
   - npm install mocha

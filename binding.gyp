@@ -62,16 +62,16 @@
       'target_name': 'action_after_build',
       'type': 'none',
       'dependencies': [ 'decoder' ],
-'actions': [
+      'actions': [
         {
           'action_name': 'move_node_module',
           'inputs': [
             '<@(PRODUCT_DIR)/decoder.node'
           ],
           'outputs': [
-            'lib/decoder.node'
+            'lib/binding/tilelive-s3.node'
           ],
-          'action': ['<@(copy_command)', '<@(PRODUCT_DIR)/decoder.node', 'lib/decoder.node']
+          'action': ['<@(copy_command)', '<@(PRODUCT_DIR)/decoder.node', 'lib/binding/tilelive-s3.node']
         }
       ]
     }
