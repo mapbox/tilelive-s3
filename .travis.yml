@@ -7,8 +7,8 @@ env:
     - NODE_NVM_VERSION="0.10"
     - NODE_NVM_VERSION="0.8"
   global:
-    - node_pre_gyp_accessKeyId: AKIAJBPMCF2RIVXM3O7Q
-    - secure: KYec4ATF0Lh43GCieRaVSxmNz0EVuRu1p00sJK1DWkF21aN7PKqsRpgb4B5Yk4cenDJtNCzBQKFO7RkY6ETJgSAkwcT/IGdl/xkVXdhevEXU3qmz1pOn4d4g/rVGn5bGDw1FUZQf5tMopn1dVsewzJydP6Xpj37gycuAvBNQaNA=
+    - node_pre_gyp_accessKeyId: AKIAJG6I5JLQ54VLYOUQ
+    - secure: "jySh3ATvI8u4UsiFci0/XXhTjloABoeUGaImJE91BoRTeFBUZgVqtaZZ3xXDvLIEwWX1qnwtDyFjbsVvdJnSJsXf+H+4afyLL/ksKyNyRgGFZYPcaG4kLqjWKj06+LC69xxRqDBbsiS88PfK7cb3eX6XjDiQEIOptoL6kRqlbUU="
 
 before_install:
   - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
