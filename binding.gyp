@@ -69,9 +69,9 @@
             '<@(PRODUCT_DIR)/decoder.node'
           ],
           'outputs': [
-            'lib/binding/tilelive-s3.node'
+            'lib/binding/tilelive_s3.node'
           ],
-          'action': ['<@(copy_command)', '<@(PRODUCT_DIR)/decoder.node', 'lib/binding/tilelive-s3.node']
+          'action': ['<@(copy_command)', '<@(PRODUCT_DIR)/decoder.node', 'lib/binding/tilelive_s3.node']
         }
       ]
     }
