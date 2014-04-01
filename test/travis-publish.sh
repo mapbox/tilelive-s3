@@ -2,6 +2,13 @@
 
 set -e
 
+# Inspect binary.
+if [ $platform == "linux" ]; then
+    ldd ./lib/binding/tilelive_s3.node
+else
+    otool -L ./lib/binding/tilelive_s3.node
+fi
+
 COMMIT_MESSAGE=$(git show -s --format=%B $TRAVIS_COMMIT | tr -d '\n')
 
 if [ "${COMMIT_MESSAGE#*'[publish binary]'}" != "$COMMIT_MESSAGE" ]; then
