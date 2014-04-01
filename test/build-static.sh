@@ -6,11 +6,7 @@ export CFLAGS="$CFLAGS -fPIC"
 build_dir=$(pwd)
 
 mkdir ./tmp && cd ./tmp
-wget 'http://prdownloads.sourceforge.net/libpng/libpng-1.6.10.tar.gz?download' -O ./libpng-1.6.10.tar.gz
-wget 'http://prdownloads.sourceforge.net/libpng/libpng-1.6.10.tar.gz.asc?download' -O ./libpng-1.6.10.tar.gz.asc
-gpg --keyserver pgp.mit.edu --recv-keys A16C640F
-gpg --verify ./libpng-1.6.10.tar.gz.asc
-
+wget https://mapnik.s3.amazonaws.com/deps/libpng-1.6.9.tar.gz -O ./libpng-1.6.10.tar.gz
 tar xzf libpng-1.6.10.tar.gz
 cd ./libpng-1.6.10
 ./configure --enable-shared --disable-shared --disable-dependency-tracking
