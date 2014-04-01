@@ -22,7 +22,6 @@ before_install:
   - npm --version
 
 install:
-  - export CXX=g++-4.8
   - npm install
 
 script:
