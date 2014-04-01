@@ -1,8 +1,8 @@
 build:
-	`npm explore npm -g -- pwd`/bin/node-gyp-bin/node-gyp build
+	npm install --build-from-source
 
 clean:
-	@rm -rf ./lib/*.node ./build
+	@rm -rf ./lib/binding ./build
 
 test: build
 	@PATH=node_modules/mocha/bin:${PATH} mocha -R spec

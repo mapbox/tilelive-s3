@@ -1,54 +1,19 @@
 {
-  'conditions': [
-      ['OS=="win"', {
-        'variables': {
-          'copy_command%': 'copy',
-          'bin_name':'call'
-        },
-      },{
-        'variables': {
-          'copy_command%': 'cp',
-          'bin_name':'node'
-        },
-      }]
-  ],
-  'target_defaults': {
-      'default_configuration': 'Release',
-      'configurations': {
-          'Debug': {
-              'cflags_cc!': ['-O3', '-DNDEBUG'],
-              'xcode_settings': {
-                'OTHER_CPLUSPLUSFLAGS!':['-O3', '-DNDEBUG']
-              },
-              'msvs_settings': {
-                 'VCCLCompilerTool': {
-                     'ExceptionHandling': 1,
-                     'RuntimeTypeInfo':'true',
-                     'RuntimeLibrary': '3'  # /MDd
-                 }
-              }
-          },
-          'Release': {
-
-          }
-      },
+  'targets': [
+    {
+      'target_name': '<(module_name)',
+      'sources': ["src/decode.cpp",
+                  "src/reader.cpp"
+      ],
       'include_dirs': [
-          './src',
-          
+          './src'
       ],
       'cflags_cc!': ['-fno-rtti', '-fno-exceptions'],
       'cflags_cc' : [
           '<!@(pkg-config libpng --cflags)'
       ],
       'libraries':[
-        '<!@(pkg-config libpng --libs)'
-      ]
-  },
-  'targets': [
-    {
-      'target_name': 'decoder',
-      'sources': ["src/decode.cpp",
-                  "src/reader.cpp"
+        '<!@(pkg-config libpng --libs --static)'
       ],
       'xcode_settings': {
         'OTHER_CPLUSPLUSFLAGS':[
@@ -61,18 +26,12 @@
     {
       'target_name': 'action_after_build',
       'type': 'none',
-      'dependencies': [ 'decoder' ],
-'actions': [
-        {
-          'action_name': 'move_node_module',
-          'inputs': [
-            '<@(PRODUCT_DIR)/decoder.node'
-          ],
-          'outputs': [
-            'lib/decoder.node'
-          ],
-          'action': ['<@(copy_command)', '<@(PRODUCT_DIR)/decoder.node', 'lib/decoder.node']
-        }
+      'dependencies': [ '<(module_name)' ],
+      'copies': [
+          {
+            'files': [ '<(PRODUCT_DIR)/<(module_name).node' ],
+            'destination': '<(module_path)'
+          }
       ]
     }
   ]

@@ -185,5 +185,5 @@ extern "C" void init(Handle<Object> target) {
     );
 }
 
-NODE_MODULE(decoder, init);
+NODE_MODULE(tilelive_s3, init);
 }

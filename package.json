@@ -2,6 +2,7 @@
     "name": "tilelive-s3",
     "version": "0.10.3",
     "dependencies": {
+        "node-pre-gyp": "0.5.x",
         "knox": "0.8.x",
         "tilejson": "0.6.x"
     },
@@ -10,9 +11,17 @@
     },
     "main": "./lib/index.js",
     "scripts": {
+        "install": "node-pre-gyp install --fallback-to-build",
         "test": "mocha -R spec"
     },
     "engines": {
         "node": ">= 0.6.13 < 0.11.0"
+    },
+    "binary": {
+        "module_name": "tilelive_s3",
+        "module_path": "./lib/binding/",
+        "host": "https://mapbox-node-binary.s3.amazonaws.com",
+        "remote_path": "./{name}/v{version}",
+        "package_name": "{node_abi}-{platform}-{arch}.tar.gz"
     }
 }

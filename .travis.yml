@@ -1,12 +1,30 @@
-language: node_js
-node_js:
-  - "0.8"
-  - "0.6"
-  - "0.10"
+language: cpp
+compiler:
+  - gcc
+
+env:
+  matrix:
+    - NODE_NVM_VERSION="0.10"
+    - NODE_NVM_VERSION="0.8"
+  global:
+    - node_pre_gyp_accessKeyId: AKIAJG6I5JLQ54VLYOUQ
+    - secure: "jySh3ATvI8u4UsiFci0/XXhTjloABoeUGaImJE91BoRTeFBUZgVqtaZZ3xXDvLIEwWX1qnwtDyFjbsVvdJnSJsXf+H+4afyLL/ksKyNyRgGFZYPcaG4kLqjWKj06+LC69xxRqDBbsiS88PfK7cb3eX6XjDiQEIOptoL6kRqlbUU="
 
 before_install:
-  - sudo apt-get update
-  - sudo apt-get install libjpeg8 libjpeg8-dev libpng-dev
+  - export platform=$(uname -s | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/")
+  - git clone https://github.com/creationix/nvm.git ../.nvm
+  - source ../.nvm/nvm.sh
+  - nvm install $NODE_NVM_VERSION
+  - nvm use $NODE_NVM_VERSION
+  - node --version
+  - npm --version
+  - ./test/build-static.sh
 
-before_script:
-  - npm install mocha
+install:
+  - npm install
+
+script:
+  - npm test
+
+after_success:
+  - ./test/travis-publish.sh
