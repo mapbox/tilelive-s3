@@ -1,30 +1,25 @@
 language: objective-c
 compiler:
-  - gcc
-
+- gcc
 env:
   matrix:
-    - NODE_NVM_VERSION="0.10"
-    - NODE_NVM_VERSION="0.8"
+  - NODE_NVM_VERSION="0.10"
+  - NODE_NVM_VERSION="0.8"
   global:
-    - node_pre_gyp_accessKeyId: AKIAJG6I5JLQ54VLYOUQ
-    - secure: "jySh3ATvI8u4UsiFci0/XXhTjloABoeUGaImJE91BoRTeFBUZgVqtaZZ3xXDvLIEwWX1qnwtDyFjbsVvdJnSJsXf+H+4afyLL/ksKyNyRgGFZYPcaG4kLqjWKj06+LC69xxRqDBbsiS88PfK7cb3eX6XjDiQEIOptoL6kRqlbUU="
-
+  - secure: SNKAav+ZYneBNqdXu5qpwQXmLgyrjD4ACxHmgn78o6+L1jLpfHX6VhCrPhDOEnG5wqz0rZBPsW2sBuhlDe56WKFqeGEfXo792XeZr/dbO8F5x4BqIeSEkH1C9yE0HdMtXZ6Ox2Oaf3vsyp+s3dtJkgtkkCqbNEDBsDVm7OY0QU8=
+  - secure: hSZG303w6N1C5SpguVngjLuYlyku7ODNuqU3ZBaHhQvXQxWPjFfKmYvbP0iBz/RPmz4KA7j+fObsq7+cA+6NjtfoPpus6h7bIDERylTqHnFC4FEaWrY+ATH3WlWgrNsPJpVrsGmV9bxeJgAeeWp3YnPld4nxlizCYaHWg9HEo2A=
 before_install:
-  - export platform=$(uname -s | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/")
-  - git clone https://github.com/creationix/nvm.git ../.nvm
-  - source ../.nvm/nvm.sh
-  - nvm install $NODE_NVM_VERSION
-  - nvm use $NODE_NVM_VERSION
-  - node --version
-  - npm --version
-  - ./test/build-static.sh
-
+- export platform=$(uname -s | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/")
+- git clone https://github.com/creationix/nvm.git ../.nvm
+- source ../.nvm/nvm.sh
+- nvm install $NODE_NVM_VERSION
+- nvm use $NODE_NVM_VERSION
+- node --version
+- npm --version
+- ./test/build-static.sh
 install:
-  - npm install
-
+- npm install
 script:
-  - npm test
-
+- npm test
 after_success:
-  - ./test/travis-publish.sh
+- ./test/travis-publish.sh
