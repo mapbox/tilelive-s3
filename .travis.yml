@@ -19,6 +19,7 @@ before_install:
 - source ./test/build-static.sh
 install:
 - npm install --build-from-source
+- if [ $platform == "linux" ]; then ldd ./lib/binding/tilelive_s3.node; else otool -L ./lib/binding/tilelive_s3.node; fi
 script:
 - npm test
 after_success:
