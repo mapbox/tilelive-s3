@@ -1,16 +1,20 @@
 #!/bin/bash
 
 set -e
-export CFLAGS="$CFLAGS -fPIC"
+export LIBPNG_PREFIX="/tmp/libpng"
+export CFLAGS="-I${LIBPNG_PREFIX}/include -fPIC"
+export LDFLAGS="-L${LIBPNG_PREFIX}/lib -Wl,-search_paths_first"
 
 build_dir=$(pwd)
 
 mkdir ./tmp && cd ./tmp
-wget https://mapnik.s3.amazonaws.com/deps/libpng-1.6.9.tar.gz -O ./libpng-1.6.9.tar.gz
-tar xzf libpng-1.6.9.tar.gz
-cd ./libpng-1.6.9
-./configure --enable-static --disable-shared --disable-dependency-tracking
+mkdir -p ${LIBPNG_PREFIX}/lib
+mkdir -p ${LIBPNG_PREFIX}/include
+wget https://mapnik.s3.amazonaws.com/deps/libpng-1.6.10.tar.gz -O ./libpng-1.6.10.tar.gz
+tar xzf libpng-1.6.10.tar.gz
+cd ./libpng-1.6.10
+./configure --prefix=${LIBPNG_PREFIX} --enable-static --disable-shared --disable-dependency-tracking
 make
-sudo make install
+make install
 
 cd $build_dir

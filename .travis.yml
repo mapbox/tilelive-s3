@@ -16,9 +16,9 @@ before_install:
 - nvm use $NODE_NVM_VERSION
 - node --version
 - npm --version
-- ./test/build-static.sh
+- source ./test/build-static.sh
 install:
-- npm install
+- npm install --build-from-source
 script:
 - npm test
 after_success:
