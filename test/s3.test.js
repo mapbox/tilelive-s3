@@ -6,19 +6,8 @@ var path = require('path');
 var fs = require('fs');
 var S3 = require('..');
 var knox = require('knox');
+var crypto = require('crypto');
 var fixtures = path.resolve(__dirname + '/fixtures');
-
-// Mock tile loading.
-function _loadTileFS(z, x, y, callback) {
-    fs.readFile(fixtures + '/' + this.data.tiles[0].replace('{z}',z).replace('{x}',x).replace('{y}',y), function(err, buffer) {
-        if (err && err.code === 'ENOENT') callback(new Error('Tile does not exist'));
-        else if (err) callback(err);
-        else callback(err, buffer, {
-            'Content-Type': 'image/png',
-            'Content-Length': buffer.length
-        });
-    });
-};
 
 var s3;
 var vt;
@@ -28,7 +17,6 @@ before(function(done) {
     }, function(err, source) {
         if (err) return done(err);
         s3 = source;
-        s3._loadTile = _loadTileFS;
         done();
     });
 });
@@ -38,7 +26,6 @@ before(function(done) {
     }, function(err, source) {
         if (err) return done(err);
         vt = source;
-        vt._loadTile = _loadTileFS;
         done();
     });
 });
@@ -47,8 +34,8 @@ describe('alpha masks', function() {
     it('should load the alpha mask for a tile', function(done) {
         s3._loadTileMask(3, 6, 5, function(err, mask) {
             if (err) throw err;
-            var reference = fs.readFileSync(fixtures + '/test/3/6/5.mask');
-            assert.deepEqual(reference, mask);
+            assert.equal(mask.length, 65536);
+            assert.equal(crypto.createHash('md5').update(mask).digest('hex'), 'f91ed545992905450cfe38c591ef345c');
             done();
         });
     });
@@ -80,12 +67,13 @@ describe('getting a tile color', function() {
     });
 });
 
-describe('loading a tile', function() {
+describe('getTile png', function() {
     it('should return a unique tile', function(done) {
-        s3.getTile(4, 12, 11, function(err, tile) {
+        s3.getTile(4, 12, 11, function(err, tile, headers) {
             if (err) throw err;
-            var reference = fs.readFileSync(fixtures + '/test/4/12/11.png');
-            assert.deepEqual(reference, tile);
+            assert.equal(1072, tile.length);
+            assert.equal(headers['Content-Type'], 'image/png');
+            assert.equal(headers['ETag'], '"2ba883e676e537d3da13e34d46e25044"');
             done();
         });
     });
@@ -99,27 +87,64 @@ describe('loading a tile', function() {
     });
 
     it('should return a solid tile', function(done) {
-        s3.getTile(4, 12, 13, function(err, tile) {
+        s3.getTile(4, 12, 13, function(err, tile, headers) {
             if (err) throw err;
-            var reference = fs.readFileSync(fixtures + '/test/3/6/7.png');
-            assert.deepEqual(tile, reference);
+            assert.equal(103, tile.length);
+            assert.equal(headers['Content-Type'], 'image/png');
+            assert.equal(headers['ETag'], '"1d6c3b07cc05d966d0029884fd4f58cc"');
             done();
         });
     });
 });
 
-describe('vector tile', function() {
+describe('getTile pbf', function() {
     it('should return a vt', function(done) {
-        vt.getTile(0, 0, 0, function(err, tile) {
+        vt.getTile(0, 0, 0, function(err, tile, headers) {
             if (err) throw err;
-            var reference = fs.readFileSync(fixtures + '/vector/0.0.0.vector.pbf');
-            assert.deepEqual(reference, tile);
+            assert.equal(40094, tile.length);
+            assert.equal(headers['Content-Type'], 'application/x-protobuf');
+            assert.equal(headers['ETag'], '"b992f1bb4a989bbb9ed2c6989719f72b"');
             done();
         });
     });
     it('should err 404', function(done) {
         vt.getTile(2, 0, 0, function(err, tile) {
             assert.equal(err.message, 'Tile does not exist');
+            done();
+        });
+    });
+});
+
+describe('putTile', function() {
+    // this.timeout(10000);
+    var put;
+    before(function(done) {
+        new S3({
+            pathname: fixtures + '/put.s3',
+        }, function(err, source) {
+            if (err) return done(err);
+            put = source;
+            done();
+        });
+    });
+    before(function(done) {
+        put.client.deleteFile('/tilelive-s3/put/3/6/5.png', done);
+    });
+    before(function(done) {
+        put.client.deleteFile('/tilelive-s3/put/0/0/0.vector.pbf', done);
+    });
+    it('should put a PNG tile', function(done) {
+        put.getTile(3, 6, 5, function(err) {
+            assert.equal('Error: Tile does not exist', err.toString());
+            put.putTile(3, 6, 5, fs.readFileSync(fixtures + '/put/3.6.5.png'), function(err) {
+                assert.ifError(err);
+                done();
+            });
+        });
+    });
+    it('should put a PBF tile', function(done) {
+        put.putTile(0, 0, 0, fs.readFileSync(fixtures + '/put/0.0.0.vector.pbf'), function(err) {
+            assert.ifError(err);
             done();
         });
     });
@@ -132,26 +157,27 @@ before(function(done) {
     }, function(err, source) {
         if (err) return done(err);
         nf = source;
-        nf._loadTile = _loadTileFS;
         done();
     });
 });
 
 describe('notfound', function() {
     it('should return a unique tile', function(done) {
-        nf.getTile(4, 12, 11, function(err, tile) {
+        nf.getTile(4, 12, 11, function(err, tile, headers) {
             if (err) throw err;
-            var reference = fs.readFileSync(fixtures + '/test/4/12/11.png');
-            assert.deepEqual(reference, tile);
+            assert.equal(1072, tile.length);
+            assert.equal(headers['Content-Type'], 'image/png');
+            assert.equal(headers['ETag'], '"2ba883e676e537d3da13e34d46e25044"');
             done();
         });
     });
 
     it('should return error tile', function(done) {
-        nf.getTile(0, 255, 255, function(err, tile) {
+        nf.getTile(0, 255, 255, function(err, tile, headers) {
             if (err) throw err;
-            var reference = fs.readFileSync(fixtures + '/test/3/6/7.png');
-            assert.deepEqual(tile, reference);
+            assert.equal(103, tile.length);
+            assert.equal(headers['Content-Type'], 'image/png');
+            assert.equal(headers['ETag'], '"1d6c3b07cc05d966d0029884fd4f58cc"');
             done();
         });
     });
@@ -174,6 +200,18 @@ describe('info', function() {
 });
 
 describe('credentials', function() {
+    var orig = {};
+    before(function() {
+        ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN'].forEach(function(k) {
+            orig[k] = process.env[k];
+            delete process.env[k];
+        });
+    });
+    after(function() {
+        ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN'].forEach(function(k) {
+            process.env[k] = orig[k];
+        });
+    });
     it('should ignore data credentials', function(done) {
         new S3({
             data: {
@@ -185,13 +223,11 @@ describe('credentials', function() {
             awsSecret: "URISECRET"
         }, function(err, source) {
             if (err) return done(err);
-            assert.ok(!!source.client);
-            assert.equal('URIKEY', source.client.key);
-            assert.equal('URISECRET', source.client.secret);
+            assert.ok(!source.client);
             done();
         });
     });
-    it('should create client from uri credentials', function(done) {
+    it('should ignore uri credentials', function(done) {
         new S3({
             data: {
                 tiles: [ "http://dummy-bucket.s3.amazonaws.com/test/{z}/{x}/{y}.png" ]
@@ -200,28 +236,25 @@ describe('credentials', function() {
             awsSecret: "URISECRET"
         }, function(err, source) {
             if (err) return done(err);
-            assert.ok(!!source.client);
-            assert.equal('URIKEY', source.client.key);
-            assert.equal('URISECRET', source.client.secret);
+            assert.ok(!source.client);
             done();
         });
     });
-    it('should create client from .s3cfg credentials', function(done) {
+    it('should ignore .s3cfg credentials', function(done) {
         new S3({
             data: {
                 tiles: [ "http://dummy-bucket.s3.amazonaws.com/test/{z}/{x}/{y}.png" ]
             }
         }, function(err, source) {
             if (err) return done(err);
-            assert.ok(!!source.client);
-            assert.equal('S3CFGKEY', source.client.key);
-            assert.equal('S3CFGSECRET', source.client.secret);
+            assert.ok(!source.client);
             done();
         });
     });
     it('should create client from env credentials', function(done) {
-        process.env.AWS_KEY = 'ENVKEY';
-        process.env.AWS_SECRET = 'ENVSECRET';
+        process.env.AWS_ACCESS_KEY_ID = 'ENVKEY';
+        process.env.AWS_SECRET_ACCESS_KEY = 'ENVSECRET';
+        process.env.AWS_SESSION_TOKEN = 'ENVTOKEN';
         new S3({
             data: {
                 tiles: [ "http://dummy-bucket.s3.amazonaws.com/test/{z}/{x}/{y}.png" ]
@@ -231,6 +264,7 @@ describe('credentials', function() {
             assert.ok(!!source.client);
             assert.equal('ENVKEY', source.client.key);
             assert.equal('ENVSECRET', source.client.secret);
+            assert.equal('ENVTOKEN', source.client.token);
             done();
         });
     });

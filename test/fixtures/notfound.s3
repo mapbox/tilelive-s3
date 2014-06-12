@@ -1,13 +1,11 @@
 {
     "name": "test",
     "scheme": "xyz",
-    "tiles": [ "test/{z}/{x}/{y}.png" ],
+    "tiles": [ "http://mapbox.s3.amazonaws.com/tilelive-s3/test/{z}/{x}/{y}.png" ],
     "minzoom": 0,
     "maxzoom": 4,
     "bounds": [ -180, -85, 180, 85 ],
     "center": [ 0, 0, 3 ],
-    "awsKey": "XXXXXXXX",
-    "awsSecret": "XXXXXXXXXXXXXXXX",
     "notFound": [3, 6, 7],
     "maxSockets": 256,
     "retry": true
