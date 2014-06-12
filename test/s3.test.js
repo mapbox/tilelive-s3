@@ -185,13 +185,11 @@ describe('credentials', function() {
             awsSecret: "URISECRET"
         }, function(err, source) {
             if (err) return done(err);
-            assert.ok(!!source.client);
-            assert.equal('URIKEY', source.client.key);
-            assert.equal('URISECRET', source.client.secret);
+            assert.ok(!source.client);
             done();
         });
     });
-    it('should create client from uri credentials', function(done) {
+    it('should ignore uri credentials', function(done) {
         new S3({
             data: {
                 tiles: [ "http://dummy-bucket.s3.amazonaws.com/test/{z}/{x}/{y}.png" ]
@@ -200,28 +198,25 @@ describe('credentials', function() {
             awsSecret: "URISECRET"
         }, function(err, source) {
             if (err) return done(err);
-            assert.ok(!!source.client);
-            assert.equal('URIKEY', source.client.key);
-            assert.equal('URISECRET', source.client.secret);
+            assert.ok(!source.client);
             done();
         });
     });
-    it('should create client from .s3cfg credentials', function(done) {
+    it('should ignore .s3cfg credentials', function(done) {
         new S3({
             data: {
                 tiles: [ "http://dummy-bucket.s3.amazonaws.com/test/{z}/{x}/{y}.png" ]
             }
         }, function(err, source) {
             if (err) return done(err);
-            assert.ok(!!source.client);
-            assert.equal('S3CFGKEY', source.client.key);
-            assert.equal('S3CFGSECRET', source.client.secret);
+            assert.ok(!source.client);
             done();
         });
     });
     it('should create client from env credentials', function(done) {
-        process.env.AWS_KEY = 'ENVKEY';
-        process.env.AWS_SECRET = 'ENVSECRET';
+        process.env.AWS_ACCESS_KEY_ID = 'ENVKEY';
+        process.env.AWS_SECRET_ACCESS_KEY = 'ENVSECRET';
+        process.env.AWS_SESSION_TOKEN = 'ENVTOKEN';
         new S3({
             data: {
                 tiles: [ "http://dummy-bucket.s3.amazonaws.com/test/{z}/{x}/{y}.png" ]
@@ -231,6 +226,7 @@ describe('credentials', function() {
             assert.ok(!!source.client);
             assert.equal('ENVKEY', source.client.key);
             assert.equal('ENVSECRET', source.client.secret);
+            assert.equal('ENVTOKEN', source.client.token);
             done();
         });
     });
