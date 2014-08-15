@@ -4,8 +4,8 @@
   "dependencies": {
     "node-pre-gyp": "0.5.x",
     "knox": "0.8.x",
-    "tiletype": "0.0.3",
-    "tilejson": "0.9.x"
+    "tiletype": "git+https://github.com/mapbox/tiletype.git#content-encoding",
+    "tilejson": "git+https://github.com/mapbox/node-tilejson.git#content-encoding"
   },
   "devDependencies": {
     "mocha": "*"

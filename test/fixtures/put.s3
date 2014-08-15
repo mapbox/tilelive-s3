@@ -1,9 +1,0 @@
-{
-    "name": "test",
-    "scheme": "xyz",
-    "tiles": [ "http://mapbox.s3.amazonaws.com/tilelive-s3/put/{z}/{x}/{y}.png" ],
-    "minzoom": 0,
-    "maxzoom": 4,
-    "bounds": [ -180, -85, 180, 85 ],
-    "center": [ 0, 0, 3 ]
-}

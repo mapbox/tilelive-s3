@@ -101,8 +101,9 @@ describe('getTile pbf', function() {
     it('should return a vt', function(done) {
         vt.getTile(0, 0, 0, function(err, tile, headers) {
             if (err) throw err;
-            assert.equal(40094, tile.length);
+            assert.equal(116509, tile.length);
             assert.equal(headers['Content-Type'], 'application/x-protobuf');
+            assert.equal(headers['Content-Encoding'], undefined);
             assert.equal(headers['ETag'], '"b992f1bb4a989bbb9ed2c6989719f72b"');
             done();
         });
@@ -116,36 +117,34 @@ describe('getTile pbf', function() {
 });
 
 describe('putTile', function() {
-    // this.timeout(10000);
-    var put;
     before(function(done) {
-        new S3({
-            pathname: fixtures + '/put.s3',
-        }, function(err, source) {
-            if (err) return done(err);
-            put = source;
-            done();
-        });
+        s3.client.deleteFile('/tilelive-s3/test/3/6/5.png', done);
     });
     before(function(done) {
-        put.client.deleteFile('/tilelive-s3/put/3/6/5.png', done);
+        vt.client.deleteFile('/tilelive-s3/vector/3/6/5.vector.pbf', done);
     });
-    before(function(done) {
-        put.client.deleteFile('/tilelive-s3/put/0/0/0.vector.pbf', done);
-    });
-    it('should put a PNG tile', function(done) {
-        put.getTile(3, 6, 5, function(err) {
-            assert.equal('Error: Tile does not exist', err.toString());
-            put.putTile(3, 6, 5, fs.readFileSync(fixtures + '/put/3.6.5.png'), function(err) {
-                assert.ifError(err);
+
+    it('puts a PNG tile', function(done) {
+        var png = fs.readFileSync(fixtures + '/tile.png');
+        s3.putTile(3, 6, 5, png, function(err) {
+            assert.ifError(err);
+            s3.getTile(3, 6, 5, function(err, data, headers) {
+                assert.deepEqual(data, png);
+                assert.equal(headers['Content-Type'], 'image/png');
                 done();
             });
         });
     });
-    it('should put a PBF tile', function(done) {
-        put.putTile(0, 0, 0, fs.readFileSync(fixtures + '/put/0.0.0.vector.pbf'), function(err) {
+
+    it('puts a PBF tile', function(done) {
+        var pbf = fs.readFileSync(fixtures + '/tile.pbf');
+        vt.putTile(3, 6, 5, pbf, function(err) {
             assert.ifError(err);
-            done();
+            vt.getTile(3, 6, 5, function(err, data, headers) {
+                assert.deepEqual(data, pbf);
+                assert.equal(headers['Content-Type'], 'application/x-protobuf');
+                done();
+            });
         });
     });
 });
