@@ -108,6 +108,18 @@ describe('getTile pbf', function() {
             done();
         });
     });
+
+    it('gets a deflated pbf with incorrect S3 headers', function(done) {
+        vt.getTile(1, 0, 0, function(err, tile, headers) {
+            if (err) throw err;
+            assert.equal(91660, tile.length);
+            assert.equal(headers['Content-Type'], 'application/x-protobuf');
+            assert.equal(headers['Content-Encoding'], undefined);
+            assert.equal(headers['ETag'], '"a1f44d4f8a857d4edac6f602d6549b7b"');
+            done();
+        });
+    });
+
     it('should err 404', function(done) {
         vt.getTile(2, 0, 0, function(err, tile) {
             assert.equal(err.message, 'Tile does not exist');
@@ -128,10 +140,16 @@ describe('putTile', function() {
         var png = fs.readFileSync(fixtures + '/tile.png');
         s3.putTile(3, 6, 5, png, function(err) {
             assert.ifError(err);
-            s3.getTile(3, 6, 5, function(err, data, headers) {
-                assert.deepEqual(data, png);
-                assert.equal(headers['Content-Type'], 'image/png');
-                done();
+            s3.client.headFile('/tilelive-s3/test/3/6/5.png', function(err, res) {
+                assert.ifError(err);
+                assert.equal(res.headers['content-type'], 'image/png');
+                assert.equal(res.headers['content-length'], '827');
+                assert.equal(res.headers['content-encoding'], undefined);
+                s3.getTile(3, 6, 5, function(err, data, headers) {
+                    assert.deepEqual(data, png);
+                    assert.equal(headers['Content-Type'], 'image/png');
+                    done();
+                });
             });
         });
     });
@@ -140,10 +158,17 @@ describe('putTile', function() {
         var pbf = fs.readFileSync(fixtures + '/tile.pbf');
         vt.putTile(3, 6, 5, pbf, function(err) {
             assert.ifError(err);
-            vt.getTile(3, 6, 5, function(err, data, headers) {
-                assert.deepEqual(data, pbf);
-                assert.equal(headers['Content-Type'], 'application/x-protobuf');
-                done();
+            vt.client.headFile('/tilelive-s3/vector/3/6/5.vector.pbf', function(err, res) {
+                assert.ifError(err);
+                assert.equal(res.headers['content-type'], 'application/x-protobuf');
+                assert.equal(res.headers['content-length'], '40094');
+                assert.equal(res.headers['content-encoding'], 'deflate');
+                vt.getTile(3, 6, 5, function(err, data, headers) {
+                    assert.deepEqual(data, pbf);
+                    assert.equal(headers['Content-Type'], 'application/x-protobuf');
+                    assert.equal(headers['Content-Encoding'], undefined);
+                    done();
+                });
             });
         });
     });
