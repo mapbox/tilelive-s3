@@ -128,10 +128,16 @@ describe('putTile', function() {
         var png = fs.readFileSync(fixtures + '/tile.png');
         s3.putTile(3, 6, 5, png, function(err) {
             assert.ifError(err);
-            s3.getTile(3, 6, 5, function(err, data, headers) {
-                assert.deepEqual(data, png);
-                assert.equal(headers['Content-Type'], 'image/png');
-                done();
+            s3.client.headFile('/tilelive-s3/test/3/6/5.png', function(err, res) {
+                assert.ifError(err);
+                assert.equal(res.headers['content-type'], 'image/png');
+                assert.equal(res.headers['content-length'], '827');
+                assert.equal(res.headers['content-encoding'], undefined);
+                s3.getTile(3, 6, 5, function(err, data, headers) {
+                    assert.deepEqual(data, png);
+                    assert.equal(headers['Content-Type'], 'image/png');
+                    done();
+                });
             });
         });
     });
@@ -140,10 +146,17 @@ describe('putTile', function() {
         var pbf = fs.readFileSync(fixtures + '/tile.pbf');
         vt.putTile(3, 6, 5, pbf, function(err) {
             assert.ifError(err);
-            vt.getTile(3, 6, 5, function(err, data, headers) {
-                assert.deepEqual(data, pbf);
-                assert.equal(headers['Content-Type'], 'application/x-protobuf');
-                done();
+            vt.client.headFile('/tilelive-s3/vector/3/6/5.vector.pbf', function(err, res) {
+                assert.ifError(err);
+                assert.equal(res.headers['content-type'], 'application/x-protobuf');
+                assert.equal(res.headers['content-length'], '40106');
+                assert.equal(res.headers['content-encoding'], 'gzip');
+                vt.getTile(3, 6, 5, function(err, data, headers) {
+                    assert.deepEqual(data, pbf);
+                    assert.equal(headers['Content-Type'], 'application/x-protobuf');
+                    assert.equal(headers['Content-Encoding'], undefined);
+                    done();
+                });
             });
         });
     });
