@@ -116,36 +116,38 @@ describe('getTile pbf', function() {
 });
 
 describe('putTile', function() {
-    // this.timeout(10000);
-    var put;
     before(function(done) {
-        new S3({
-            pathname: fixtures + '/put.s3',
-        }, function(err, source) {
-            if (err) return done(err);
-            put = source;
-            done();
-        });
+        s3.client.deleteFile('/tilelive-s3/test/3/6/5.png', done);
     });
     before(function(done) {
-        put.client.deleteFile('/tilelive-s3/put/3/6/5.png', done);
+        vt.client.deleteFile('/tilelive-s3/vector/3/6/5.vector.pbf', done);
     });
-    before(function(done) {
-        put.client.deleteFile('/tilelive-s3/put/0/0/0.vector.pbf', done);
-    });
-    it('should put a PNG tile', function(done) {
-        put.getTile(3, 6, 5, function(err) {
-            assert.equal('Error: Tile does not exist', err.toString());
-            put.putTile(3, 6, 5, fs.readFileSync(fixtures + '/put/3.6.5.png'), function(err) {
+
+    it('puts a PNG tile', function(done) {
+        var png = fs.readFileSync(fixtures + '/tile.png');
+        s3.putTile(3, 6, 5, png, function(err) {
+            assert.ifError(err);
+            s3.client.headFile('/tilelive-s3/test/3/6/5.png', function(err, res) {
                 assert.ifError(err);
+                assert.equal(res.headers['content-type'], 'image/png');
+                assert.equal(res.headers['content-length'], '827');
+                assert.equal(res.headers['content-encoding'], undefined);
                 done();
             });
         });
     });
-    it('should put a PBF tile', function(done) {
-        put.putTile(0, 0, 0, fs.readFileSync(fixtures + '/put/0.0.0.vector.pbf'), function(err) {
+
+    it('puts a PBF tile', function(done) {
+        var pbf = fs.readFileSync(fixtures + '/tile.pbf.gz');
+        vt.putTile(3, 6, 5, pbf, function(err) {
             assert.ifError(err);
-            done();
+            vt.client.headFile('/tilelive-s3/vector/3/6/5.vector.pbf', function(err, res) {
+                assert.ifError(err);
+                assert.equal(res.headers['content-type'], 'application/x-protobuf');
+                assert.equal(res.headers['content-length'], '40115');
+                assert.equal(res.headers['content-encoding'], 'gzip');
+                done();
+            });
         });
     });
 });

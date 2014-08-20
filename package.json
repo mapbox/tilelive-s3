@@ -4,7 +4,7 @@
   "dependencies": {
     "node-pre-gyp": "0.5.x",
     "knox": "0.8.x",
-    "tiletype": "0.0.3",
+    "tiletype": "0.1.x",
     "tilejson": "0.9.x"
   },
   "devDependencies": {
