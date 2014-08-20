@@ -1,6 +1,6 @@
 {
   "name": "tilelive-s3",
-  "version": "0.15.0",
+  "version": "0.16.0",
   "dependencies": {
     "node-pre-gyp": "0.5.x",
     "knox": "0.8.x",
