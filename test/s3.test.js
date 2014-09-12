@@ -8,6 +8,8 @@ var S3 = require('..');
 var knox = require('knox');
 var crypto = require('crypto');
 var fixtures = path.resolve(__dirname + '/fixtures');
+var AWS = require('aws-sdk');
+var awss3 = new AWS.S3();
 
 var s3;
 var vt;
@@ -117,10 +119,16 @@ describe('getTile pbf', function() {
 
 describe('putTile', function() {
     before(function(done) {
-        s3.client.deleteFile('/tilelive-s3/test/3/6/5.png', done);
+        awss3.deleteObject({
+            Bucket: 'mapbox',
+            Key: 'tilelive-s3/test/3/6/5.png'
+        }, done);
     });
     before(function(done) {
-        vt.client.deleteFile('/tilelive-s3/vector/3/6/5.vector.pbf', done);
+        awss3.deleteObject({
+            Bucket: 'mapbox',
+            Key: 'tilelive-s3/vector/3/6/5.png'
+        }, done);
     });
 
     it('puts a PNG tile', function(done) {
