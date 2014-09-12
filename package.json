@@ -2,10 +2,11 @@
   "name": "tilelive-s3",
   "version": "0.16.1",
   "dependencies": {
-    "node-pre-gyp": "0.5.x",
+    "aws-sdk": "~2.0.17",
     "knox": "0.8.x",
-    "tiletype": "0.1.x",
-    "tilejson": "0.10.x"
+    "node-pre-gyp": "0.5.x",
+    "tilejson": "0.10.x",
+    "tiletype": "0.1.x"
   },
   "devDependencies": {
     "mocha": "*"

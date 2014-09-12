@@ -8,6 +8,8 @@ var S3 = require('..');
 var knox = require('knox');
 var crypto = require('crypto');
 var fixtures = path.resolve(__dirname + '/fixtures');
+var AWS = require('aws-sdk');
+var awss3 = new AWS.S3();
 
 var s3;
 var vt;
@@ -117,36 +119,48 @@ describe('getTile pbf', function() {
 
 describe('putTile', function() {
     before(function(done) {
-        s3.client.deleteFile('/tilelive-s3/test/3/6/5.png', done);
+        awss3.deleteObject({
+            Bucket: 'mapbox',
+            Key: 'tilelive-s3/test/3/6/5.png'
+        }, done);
     });
     before(function(done) {
-        vt.client.deleteFile('/tilelive-s3/vector/3/6/5.vector.pbf', done);
+        awss3.deleteObject({
+            Bucket: 'mapbox',
+            Key: 'tilelive-s3/vector/3/6/5.png'
+        }, done);
     });
 
     it('puts a PNG tile', function(done) {
         var png = fs.readFileSync(fixtures + '/tile.png');
-        s3.putTile(3, 6, 5, png, function(err) {
+        s3.startWriting(function(err) {
             assert.ifError(err);
-            s3.client.headFile('/tilelive-s3/test/3/6/5.png', function(err, res) {
+            s3.putTile(3, 6, 5, png, function(err) {
                 assert.ifError(err);
-                assert.equal(res.headers['content-type'], 'image/png');
-                assert.equal(res.headers['content-length'], '827');
-                assert.equal(res.headers['content-encoding'], undefined);
-                done();
+                s3.client.headFile('/tilelive-s3/test/3/6/5.png', function(err, res) {
+                    assert.ifError(err);
+                    assert.equal(res.headers['content-type'], 'image/png');
+                    assert.equal(res.headers['content-length'], '827');
+                    assert.equal(res.headers['content-encoding'], undefined);
+                    done();
+                });
             });
         });
     });
 
     it('puts a PBF tile', function(done) {
         var pbf = fs.readFileSync(fixtures + '/tile.pbf.gz');
-        vt.putTile(3, 6, 5, pbf, function(err) {
+        vt.startWriting(function(err) {
             assert.ifError(err);
-            vt.client.headFile('/tilelive-s3/vector/3/6/5.vector.pbf', function(err, res) {
+            vt.putTile(3, 6, 5, pbf, function(err) {
                 assert.ifError(err);
-                assert.equal(res.headers['content-type'], 'application/x-protobuf');
-                assert.equal(res.headers['content-length'], '40115');
-                assert.equal(res.headers['content-encoding'], 'gzip');
-                done();
+                vt.client.headFile('/tilelive-s3/vector/3/6/5.vector.pbf', function(err, res) {
+                    assert.ifError(err);
+                    assert.equal(res.headers['content-type'], 'application/x-protobuf');
+                    assert.equal(res.headers['content-length'], '40115');
+                    assert.equal(res.headers['content-encoding'], 'gzip');
+                    done();
+                });
             });
         });
     });
@@ -263,11 +277,15 @@ describe('credentials', function() {
             }
         }, function(err, source) {
             if (err) return done(err);
-            assert.ok(!!source.client);
-            assert.equal('ENVKEY', source.client.key);
-            assert.equal('ENVSECRET', source.client.secret);
-            assert.equal('ENVTOKEN', source.client.token);
-            done();
+            assert.ok(!source.client);
+            source.startWriting(function(err) {
+                if (err) return done(err);
+                assert.ok(!!source.client);
+                assert.equal('ENVKEY', source.client.key);
+                assert.equal('ENVSECRET', source.client.secret);
+                assert.equal('ENVTOKEN', source.client.token);
+                done();
+            });
         });
     });
     it('should use client passed in via uri', function(done) {
@@ -285,7 +303,14 @@ describe('credentials', function() {
             assert.ok(!!source.client);
             assert.equal('CLIENTKEY', source.client.key);
             assert.equal('CLIENTSECRET', source.client.secret);
-            done();
+            // Call to startWriting should not touch the client.
+            source.startWriting(function(err) {
+                if (err) return done(err);
+                assert.ok(!!source.client);
+                assert.equal('CLIENTKEY', source.client.key);
+                assert.equal('CLIENTSECRET', source.client.secret);
+                done();
+            });
         });
     });
 });
