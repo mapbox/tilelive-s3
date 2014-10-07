@@ -1,7 +1,7 @@
 // Set env key/secret before requiring tilelive-s3.
 process.env.HOME = __dirname + '/fixtures';
 
-var assert = require('assert');
+var tape = require('tape');
 var path = require('path');
 var fs = require('fs');
 var S3 = require('..');
@@ -13,125 +13,126 @@ var awss3 = new AWS.S3();
 
 var s3;
 var vt;
-before(function(done) {
+var nf;
+tape('setup', function(assert) {
     new S3({
         pathname: fixtures + '/test.s3',
     }, function(err, source) {
-        if (err) return done(err);
+        assert.ifError(err);
         s3 = source;
-        done();
+        assert.end();
     });
 });
-before(function(done) {
+tape('setup', function(assert) {
     new S3({
         pathname: fixtures + '/vector.s3',
     }, function(err, source) {
-        if (err) return done(err);
+        assert.ifError(err);
         vt = source;
-        done();
+        assert.end();
+    });
+});
+tape('setup', function(assert) {
+    new S3({
+        pathname: fixtures + '/notfound.s3',
+    }, function(err, source) {
+        assert.ifError(err);
+        nf = source;
+        assert.end();
     });
 });
 
-describe('alpha masks', function() {
-    it('should load the alpha mask for a tile', function(done) {
+    tape('should load the alpha mask for a tile', function(assert) {
         s3._loadTileMask(3, 6, 5, function(err, mask) {
             if (err) throw err;
             assert.equal(mask.length, 65536);
             assert.equal(crypto.createHash('md5').update(mask).digest('hex'), 'f91ed545992905450cfe38c591ef345c');
-            done();
+            assert.end();
         });
     });
-});
 
-describe('getting a tile color', function() {
-    it('should return color false for an existing tile', function(done) {
+    tape('should return color false for an existing tile', function(assert) {
         s3._getColor(4, 12, 11, function(err, color) {
             if (err) throw err;
             assert.equal(color, false);
-            done();
+            assert.end();
         });
     });
 
-    it('should return blank for a blank tile', function(done) {
+    tape('should return blank for a blank tile', function(assert) {
         s3._getColor(4, 12, 10, function(err, color) {
             if (err) throw err;
             assert.equal(color, 0);
-            done();
+            assert.end();
         });
     });
 
-    it('should return color #7f7f7f for a solid tile', function(done) {
+    tape('should return color #7f7f7f for a solid tile', function(assert) {
         s3._getColor(4, 12, 13, function(err, color) {
             if (err) throw err;
             assert.equal(color, 255);
-            done();
+            assert.end();
         });
     });
-});
 
-describe('getTile png', function() {
-    it('should return a unique tile', function(done) {
+    tape('should return a unique tile', function(assert) {
         s3.getTile(4, 12, 11, function(err, tile, headers) {
             if (err) throw err;
             assert.equal(1072, tile.length);
             assert.equal(headers['Content-Type'], 'image/png');
             assert.equal(headers['ETag'], '"2ba883e676e537d3da13e34d46e25044"');
-            done();
+            assert.end();
         });
     });
 
-    it('should return a blank tile', function(done) {
+    tape('should return a blank tile', function(assert) {
         s3.getTile(4, 12, 10, function(err) {
             assert.ok(err);
             assert.equal(err.message, 'Tile does not exist');
-            done();
+            assert.end();
         });
     });
 
-    it('should return a solid tile', function(done) {
+    tape('should return a solid tile', function(assert) {
         s3.getTile(4, 12, 13, function(err, tile, headers) {
             if (err) throw err;
             assert.equal(103, tile.length);
             assert.equal(headers['Content-Type'], 'image/png');
             assert.equal(headers['ETag'], '"1d6c3b07cc05d966d0029884fd4f58cc"');
-            done();
+            assert.end();
         });
     });
-});
 
-describe('getTile pbf', function() {
-    it('should return a vt', function(done) {
+    tape('should return a vt', function(assert) {
         vt.getTile(0, 0, 0, function(err, tile, headers) {
             if (err) throw err;
             assert.equal(40094, tile.length);
             assert.equal(headers['Content-Type'], 'application/x-protobuf');
             assert.equal(headers['ETag'], '"b992f1bb4a989bbb9ed2c6989719f72b"');
-            done();
+            assert.end();
         });
     });
-    it('should err 404', function(done) {
+    tape('should err 404', function(assert) {
         vt.getTile(2, 0, 0, function(err, tile) {
             assert.equal(err.message, 'Tile does not exist');
-            done();
+            assert.end();
         });
     });
-});
 
-describe('putTile', function() {
-    before(function(done) {
+    tape('setup', function(assert) {
         awss3.deleteObject({
             Bucket: 'mapbox',
             Key: 'tilelive-s3/test/3/6/5.png'
-        }, done);
+        }, assert.end);
     });
-    before(function(done) {
+    tape('setup', function(assert) {
         awss3.deleteObject({
             Bucket: 'mapbox',
             Key: 'tilelive-s3/vector/3/6/5.png'
-        }, done);
+        }, assert.end);
     });
 
-    it('puts a PNG tile', function(done) {
+    tape('puts a PNG tile', function(assert) {
         var png = fs.readFileSync(fixtures + '/tile.png');
         s3.startWriting(function(err) {
             assert.ifError(err);
@@ -142,13 +143,13 @@ describe('putTile', function() {
                     assert.equal(res.headers['content-type'], 'image/png');
                     assert.equal(res.headers['content-length'], '827');
                     assert.equal(res.headers['content-encoding'], undefined);
-                    done();
+                    assert.end();
                 });
             });
         });
     });
 
-    it('puts a PBF tile', function(done) {
+    tape('puts a PBF tile', function(assert) {
         var pbf = fs.readFileSync(fixtures + '/tile.pbf.gz');
         vt.startWriting(function(err) {
             assert.ifError(err);
@@ -159,48 +160,33 @@ describe('putTile', function() {
                     assert.equal(res.headers['content-type'], 'application/x-protobuf');
                     assert.equal(res.headers['content-length'], '40115');
                     assert.equal(res.headers['content-encoding'], 'gzip');
-                    done();
+                    assert.end();
                 });
             });
         });
     });
-});
 
-var nf;
-before(function(done) {
-    new S3({
-        pathname: fixtures + '/notfound.s3',
-    }, function(err, source) {
-        if (err) return done(err);
-        nf = source;
-        done();
-    });
-});
-
-describe('notfound', function() {
-    it('should return a unique tile', function(done) {
+    tape('should return a unique tile', function(assert) {
         nf.getTile(4, 12, 11, function(err, tile, headers) {
             if (err) throw err;
             assert.equal(1072, tile.length);
             assert.equal(headers['Content-Type'], 'image/png');
             assert.equal(headers['ETag'], '"2ba883e676e537d3da13e34d46e25044"');
-            done();
+            assert.end();
         });
     });
 
-    it('should return error tile', function(done) {
+    tape('should return error tile', function(assert) {
         nf.getTile(0, 255, 255, function(err, tile, headers) {
             if (err) throw err;
             assert.equal(103, tile.length);
             assert.equal(headers['Content-Type'], 'image/png');
             assert.equal(headers['ETag'], '"1d6c3b07cc05d966d0029884fd4f58cc"');
-            done();
+            assert.end();
         });
     });
-});
 
-describe('info', function() {
-    it('should not include custom keys', function(done) {
+    tape('should not include custom keys', function(assert) {
         nf.getInfo(function(err, info) {
             if (err) throw err;
             assert.ok(!('awsKey' in info));
@@ -210,25 +196,19 @@ describe('info', function() {
             assert.ok(!('maskSolid' in info));
             assert.ok(!('maxSockets' in info));
             assert.ok(!('retry' in info));
-            done();
+            assert.end();
         });
     });
-});
 
-describe('credentials', function() {
     var orig = {};
-    before(function() {
+    tape('setup', function(assert) {
         ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN'].forEach(function(k) {
             orig[k] = process.env[k];
             delete process.env[k];
         });
+        assert.end();
     });
-    after(function() {
-        ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN'].forEach(function(k) {
-            process.env[k] = orig[k];
-        });
-    });
-    it('should ignore data credentials', function(done) {
+    tape('should ignore data credentials', function(assert) {
         new S3({
             data: {
                 tiles: [ "http://dummy-bucket.s3.amazonaws.com/test/{z}/{x}/{y}.png" ],
@@ -240,10 +220,10 @@ describe('credentials', function() {
         }, function(err, source) {
             if (err) return done(err);
             assert.ok(!source.client);
-            done();
+            assert.end();
         });
     });
-    it('should ignore uri credentials', function(done) {
+    tape('should ignore uri credentials', function(assert) {
         new S3({
             data: {
                 tiles: [ "http://dummy-bucket.s3.amazonaws.com/test/{z}/{x}/{y}.png" ]
@@ -253,10 +233,10 @@ describe('credentials', function() {
         }, function(err, source) {
             if (err) return done(err);
             assert.ok(!source.client);
-            done();
+            assert.end();
         });
     });
-    it('should ignore .s3cfg credentials', function(done) {
+    tape('should ignore .s3cfg credentials', function(assert) {
         new S3({
             data: {
                 tiles: [ "http://dummy-bucket.s3.amazonaws.com/test/{z}/{x}/{y}.png" ]
@@ -264,10 +244,10 @@ describe('credentials', function() {
         }, function(err, source) {
             if (err) return done(err);
             assert.ok(!source.client);
-            done();
+            assert.end();
         });
     });
-    it('should create client from env credentials', function(done) {
+    tape('should create client from env credentials', function(assert) {
         process.env.AWS_ACCESS_KEY_ID = 'ENVKEY';
         process.env.AWS_SECRET_ACCESS_KEY = 'ENVSECRET';
         process.env.AWS_SESSION_TOKEN = 'ENVTOKEN';
@@ -284,11 +264,11 @@ describe('credentials', function() {
                 assert.equal('ENVKEY', source.client.key);
                 assert.equal('ENVSECRET', source.client.secret);
                 assert.equal('ENVTOKEN', source.client.token);
-                done();
+                assert.end();
             });
         });
     });
-    it('should use client passed in via uri', function(done) {
+    tape('should use client passed in via uri', function(assert) {
         new S3({
             data: {
                 tiles: [ "http://dummy-bucket.s3.amazonaws.com/test/{z}/{x}/{y}.png" ]
@@ -309,23 +289,26 @@ describe('credentials', function() {
                 assert.ok(!!source.client);
                 assert.equal('CLIENTKEY', source.client.key);
                 assert.equal('CLIENTSECRET', source.client.secret);
-                done();
+                assert.end();
             });
         });
     });
-});
+    tape('cleanup', function(assert) {
+        ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN'].forEach(function(k) {
+            process.env[k] = orig[k];
+        });
+        assert.end();
+    });
 
-describe('error', function() {
-    it('source load error should fail gracefully', function(done) {
+    tape('source load error should fail gracefully', function(assert) {
         new S3({}, function(err, source) {
             assert.ok(err);
             assert.equal('Invalid URI ', err.message);
-            done();
+            assert.end();
         });
     });
-});
 
-describe('geocoder (carmen) API', function() {
+(function() {
 
 var expected = {
     bounds: '-141.005548666451,41.6690855919108,-52.615930948992,83.1161164353916',
@@ -339,23 +322,23 @@ var expected = {
 var from = new S3({data:JSON.parse(fs.readFileSync(__dirname + '/fixtures/geocoder.s3'))}, function() {});
 var prefixed = new S3({data:JSON.parse(fs.readFileSync(__dirname + '/fixtures/geocoder.prefixed.s3'))}, function() {});
 
-it('getGeocoderData', function(done) {
+tape('getGeocoderData', function(assert) {
     from.getGeocoderData('term', 0, function(err, buffer) {
         assert.ifError(err);
         assert.equal(3891, buffer.length);
-        done();
+        assert.end();
     });
 });
 
-it('getGeocoderData (prefixed source)', function(done) {
+tape('getGeocoderData (prefixed source)', function(assert) {
     prefixed.getGeocoderData('term', 0, function(err, buffer) {
         assert.ifError(err);
         assert.equal(3891, buffer.length);
-        done();
+        assert.end();
     });
 });
 
-it.skip('putGeocoderData', function(done) {
+tape.skip('putGeocoderData', function(assert) {
     to.startWriting(function(err) {
         assert.ifError(err);
         to.putGeocoderData('term', 0, new Buffer('asdf'), function(err) {
@@ -365,14 +348,14 @@ it.skip('putGeocoderData', function(done) {
                 to.getGeocoderData('term', 0, function(err, buffer) {
                     assert.ifError(err);
                     assert.deepEqual('asdf', buffer.toString());
-                    done();
+                    assert.end();
                 });
             });
         });
     });
 });
 
-it('getIndexableDocs', function(done) {
+tape('getIndexableDocs', function(assert) {
     from.getIndexableDocs({}, function(err, docs, pointer) {
         assert.ifError(err);
         assert.equal(docs.length, 63);
@@ -381,12 +364,12 @@ it('getIndexableDocs', function(done) {
             assert.ifError(err);
             assert.equal(docs.length, 64);
             assert.deepEqual(pointer, {shard:2});
-            done();
+            assert.end();
         });
     });
 });
 
-it('getIndexableDocs (prefixed source)', function(done) {
+tape('getIndexableDocs (prefixed source)', function(assert) {
     prefixed.getIndexableDocs({}, function(err, docs, pointer) {
         assert.ifError(err);
         assert.equal(docs.length, 63);
@@ -394,18 +377,17 @@ it('getIndexableDocs (prefixed source)', function(done) {
         prefixed.getIndexableDocs(pointer, function(err, docs, pointer) {
             assert.ifError(err);
             assert.equal(64, docs.length);
-            assert.equal('64', docs[0]._id);
+            assert.equal(64, docs[0]._id);
             assert.deepEqual(pointer, {shard:2});
             prefixed.getIndexableDocs(pointer, function(err, docs, pointer) {
                 assert.ifError(err);
                 assert.equal(64, docs.length);
-                assert.equal('128', docs[0]._id);
+                assert.equal(128, docs[0]._id);
                 assert.deepEqual(pointer, {shard:3});
-                done();
+                assert.end();
             });
         });
     });
 });
 
-});
-
+})();
