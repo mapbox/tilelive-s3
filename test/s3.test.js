@@ -134,18 +134,74 @@ tape('setup', function(assert) {
 
     tape('puts a PNG tile', function(assert) {
         var png = fs.readFileSync(fixtures + '/tile.png');
+        var get = s3._stats.get;
+        var put = s3._stats.put;
+        var noop = s3._stats.noop;
+        var txin = s3._stats.txin;
+        var txout = s3._stats.txout;
         s3.startWriting(function(err) {
             assert.ifError(err);
+            putTile();
+        });
+
+        // First PUT.
+        function putTile() {
             s3.putTile(3, 6, 5, png, function(err) {
                 assert.ifError(err);
-                s3.client.headFile('/tilelive-s3/test/3/6/5.png', function(err, res) {
-                    assert.ifError(err);
-                    assert.equal(res.headers['content-type'], 'image/png');
-                    assert.equal(res.headers['content-length'], '827');
-                    assert.equal(res.headers['content-encoding'], undefined);
-                    assert.end();
-                });
+                assert.equal(s3._stats.get - get, 1, 'stats: +1 get');
+                assert.equal(s3._stats.put - put, 1, 'stats: +1 put');
+                assert.equal(s3._stats.noop - noop, 0, 'stats: +0 noop');
+                assert.equal(s3._stats.txin - txin, 0, 'stats: +0 txin');
+                assert.equal(s3._stats.txout - txout, 827, 'stats +827 txout');
+                head();
             });
+        }
+
+        // Confirm obj is written.
+        function head() {
+            s3.client.headFile('/tilelive-s3/test/3/6/5.png', function(err, res) {
+                assert.ifError(err);
+                assert.equal(res.headers['content-type'], 'image/png');
+                assert.equal(res.headers['content-length'], '827');
+                assert.equal(res.headers['content-encoding'], undefined);
+                putTile2();
+            });
+        }
+
+        // Noop PUT.
+        function putTile2() {
+            var get = s3._stats.get;
+            var put = s3._stats.put;
+            var noop = s3._stats.noop;
+            var txin = s3._stats.txin;
+            var txout = s3._stats.txout;
+            s3.putTile(3, 6, 5, png, function(err) {
+                assert.ifError(err);
+                assert.equal(s3._stats.get - get, 1, 'stats: +1 get');
+                assert.equal(s3._stats.put - put, 0, 'stats: +0 put');
+                assert.equal(s3._stats.noop - noop, 1, 'stats: +1 noop');
+                assert.equal(s3._stats.txin - txin, 827, 'stats: +827 txin');
+                assert.equal(s3._stats.txout - txout, 0, 'stats +0 txout');
+                assert.end();
+            });
+        }
+    });
+
+    tape('puts a PNG tile (noop)', function(assert) {
+        var png = fs.readFileSync(fixtures + '/tile.png');
+        var get = s3._stats.get;
+        var put = s3._stats.put;
+        var noop = s3._stats.noop;
+        var txin = s3._stats.txin;
+        var txout = s3._stats.txout;
+        s3.putTile(3, 6, 5, png, function(err) {
+            assert.ifError(err);
+            assert.equal(s3._stats.get - get, 1, 'stats: +1 get');
+            assert.equal(s3._stats.put - put, 0, 'stats: +0 put');
+            assert.equal(s3._stats.noop - noop, 1, 'stats: +1 noop');
+            assert.equal(s3._stats.txin - txin, 827, 'stats: +827 txin');
+            assert.equal(s3._stats.txout - txout, 0, 'stats +0 txout');
+            assert.end();
         });
     });
 
