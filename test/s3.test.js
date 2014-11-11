@@ -11,6 +11,9 @@ var fixtures = path.resolve(__dirname + '/fixtures');
 var AWS = require('aws-sdk');
 var awss3 = new AWS.S3();
 
+delete process.env.TILELIVE_S3_DRYRUN;
+delete process.env.TILELIVE_S3_STATS;
+
 var s3;
 var vt;
 var nf;
@@ -201,6 +204,52 @@ tape('setup', function(assert) {
             assert.equal(s3._stats.noop - noop, 1, 'stats: +1 noop');
             assert.equal(s3._stats.txin - txin, 827, 'stats: +827 txin');
             assert.equal(s3._stats.txout - txout, 0, 'stats +0 txout');
+            assert.end();
+        });
+    });
+
+    tape('puts a PNG tile (dryrun)', function(assert) {
+        process.env.TILELIVE_S3_DRYRUN = '1';
+        var png = fs.readFileSync(fixtures + '/tile.png');
+        var get = s3._stats.get;
+        var put = s3._stats.put;
+        var noop = s3._stats.noop;
+        var txin = s3._stats.txin;
+        var txout = s3._stats.txout;
+        s3.putTile(10, 0, 0, png, function(err) {
+            assert.ifError(err);
+            assert.equal(s3._stats.get - get, 1, 'stats: +1 get');
+            assert.equal(s3._stats.put - put, 1, 'stats: +1 put');
+            assert.equal(s3._stats.noop - noop, 0, 'stats: +0 noop');
+            assert.equal(s3._stats.txin - txin, 0, 'stats: +0 txin');
+            assert.equal(s3._stats.txout - txout, 827, 'stats +827 txout');
+            delete process.env.TILELIVE_S3_DRYRUN;
+            assert.end();
+        });
+    });
+
+    tape('stopWriting (no stats)', function(assert) {
+        var origlog = console.log;
+        var stdout = [];
+        console.log = stdout.push.bind(stdout);
+        s3.stopWriting(function(err) {
+            console.log = origlog;
+            assert.ifError(err);
+            assert.equal(stdout.length, 0, 'does not report');
+            assert.end();
+        });
+    });
+
+    tape('stopWriting (stats)', function(assert) {
+        process.env.TILELIVE_S3_STATS = '1';
+        var origlog = console.log;
+        var stdout = [];
+        console.log = stdout.push.bind(stdout);
+        s3.stopWriting(function(err) {
+            console.log = origlog;
+            assert.ifError(err);
+            assert.equal(stdout.length, 14, 'reports stats');
+            delete process.env.TILELIVE_S3_STATS;
             assert.end();
         });
     });
