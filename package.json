@@ -1,6 +1,6 @@
 {
   "name": "tilelive-s3",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "dependencies": {
     "aws-sdk": "~2.0.17",
     "knox": "0.8.x",
