@@ -28,7 +28,7 @@ var mock = http.createServer(function (req, res) {
         setTimeout(function() {
             res.writeHead(200);
             res.end();
-        }, 70000);
+        }, 10000);
     } else {
         res.writeHead(404);
         res.end();
