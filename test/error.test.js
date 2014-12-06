@@ -21,6 +21,14 @@ var mock = http.createServer(function (req, res) {
             res.writeHead(200);
             res.end();
         }, 10000);
+    } else if (req.method == 'GET' && req.url.match(/^\/dummy-bucket\/slowput(\/\d){3}.png$/)) {
+        res.writeHead(404);
+        res.end();
+    } else if (req.method == 'PUT' && req.url.match(/^\/dummy-bucket\/slowput(\/\d){3}.png$/)) {
+        setTimeout(function() {
+            res.writeHead(200);
+            res.end();
+        }, 70000);
     } else {
         res.writeHead(404);
         res.end();
@@ -41,6 +49,27 @@ tape('putTile retry on GET timeout', function(assert) {
             source.putTile(3, 6, 5, png, function(err) {
                 assert.equal(err.message, 'Timed out after 5000ms');
                 assert.equal(err.status, 504);
+                assert.end();
+            });
+        });
+    });
+});
+
+tape('putTile retry on PUT timeout', function(assert) {
+    var png = fs.readFileSync(fixtures + '/tile.png');
+
+    new S3({
+        data: {
+            tiles: [ 'http://dummy-bucket.s3.amazonaws.com/slowput/{z}/{x}/{y}.png' ]
+        },
+        client: client
+    }, function(err, source) {
+        assert.ifError(err);
+        source.startWriting(function(err) {
+            if (err) return done(err);
+            source.putTile(3, 6, 5, png, function(err) {
+                assert.equal(err.message, 'socket hang up');
+                assert.equal(err.code, 'ECONNRESET');
                 assert.end();
             });
         });
