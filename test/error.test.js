@@ -47,7 +47,25 @@ tape('putTile retry on GET timeout', function(assert) {
     });
 });
 
-tape('teardown', function(assert) {
+tape('mock server teardown', function(assert) {
     mock.close(assert.end);
 });
 
+tape('_retry', function(assert) {
+    var start = Date.now();
+
+    function func() {
+        S3._retry(func, callback)(new Error('Something went wrong'));
+    };
+
+    func();
+
+    function callback(err) {
+        var duration = Date.now() - start;
+        assert.equal(err.message, 'Something went wrong');
+        assert.equal(func._retry, 11);
+        assert.ok(duration >= 190000, 'Retries took too long');
+        assert.ok(duration <= 195000, 'Retries happened to quickly');
+        assert.end();
+    }
+});
