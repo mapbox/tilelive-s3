@@ -92,9 +92,9 @@ tape('_retry', function(assert) {
     function callback(err) {
         var duration = Date.now() - start;
         assert.equal(err.message, 'Something went wrong');
-        assert.equal(func._retry, 11);
-        assert.ok(duration >= 190000, 'Retries took too long');
-        assert.ok(duration <= 195000, 'Retries happened to quickly');
+        assert.equal(func._retry, 3);
+        assert.ok(duration >= 6000, 'should not happen to quickly');
+        assert.ok(duration <= 6010, 'should not take too long');
         assert.end();
     }
 });
