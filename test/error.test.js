@@ -21,7 +21,7 @@ var mock = http.createServer(function (req, res) {
             res.writeHead(200);
             res.end();
         }, 10000);
-    } else if (req.method == 'GET' && req.url.match(/^\/dummy-bucket\/slowput(\/\d){3}.png$/)) {
+    } else if (req.method == 'GET') {
         res.writeHead(404);
         res.end();
     } else if (req.method == 'PUT' && req.url.match(/^\/dummy-bucket\/slowput(\/\d){3}.png$/)) {
@@ -29,11 +29,16 @@ var mock = http.createServer(function (req, res) {
             res.writeHead(200);
             res.end();
         }, 10000);
-    } else if (req.method == 'GET' && req.url.match(/^\/dummy-bucket\/hangup(\/\d){3}.png$/)) {
-        res.writeHead(404);
-        res.end();
     } else if (req.method == 'PUT' && req.url.match(/^\/dummy-bucket\/hangup(\/\d){3}.png$/)) {
         req.socket.destroy();
+    } else if (req.method == 'PUT' && req.url.match(/^\/dummy-bucket\/httperror(\/\d){3}.png$/)) {
+        var body = '<?xml version="1.0" encoding="UTF-8"?>' +
+                   '<Error>' +
+                   '  <Code>SlowDown</Code>' +
+                   '  <Message>Reduce your request rate</Message>' +
+                   '</Error>';
+        res.writeHead(503);
+        res.end(body);
     } else {
         res.writeHead(404);
         res.end();
@@ -95,6 +100,25 @@ tape('putTile retry on server closed connection', function(assert) {
             source.putTile(3, 6, 5, png, function(err) {
                 assert.equal(err.message, 'socket hang up');
                 assert.equal(err.code, 'ECONNRESET');
+                assert.end();
+            });
+        });
+    });
+});
+
+tape('putTile retry on http error', function(assert) {
+    var png = fs.readFileSync(fixtures + '/tile.png');
+
+    new S3({
+        data: {
+            tiles: [ 'http://dummy-bucket.s3.amazonaws.com/httperror/{z}/{x}/{y}.png' ]
+        },
+        client: client
+    }, function(err, source) {
+        source.startWriting(function(err) {
+            if (err) return done(err);
+            source.putTile(3, 6, 5, png, function(err) {
+                assert.equal(err.message, 'S3 put failed: 503');
                 assert.end();
             });
         });
