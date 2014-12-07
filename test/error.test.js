@@ -165,7 +165,7 @@ tape('_retry', function(assert) {
         assert.equal(err.message, 'Something went wrong');
         assert.equal(func._retry, 5);
         assert.ok(duration >= 30000, 'should not happen to quickly');
-        assert.ok(duration <= 30020, 'should not take too long');
+        assert.ok(duration <= 31000, 'should not take too long');
         assert.end();
     }
 });
