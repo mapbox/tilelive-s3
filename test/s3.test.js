@@ -162,11 +162,13 @@ tape('setup', function(assert) {
 
         // Confirm obj is written.
         function head() {
-            s3.client.headFile('/tilelive-s3/test/3/6/5.png', function(err, res) {
+            awss3.headObject({
+                Bucket: 'mapbox',
+                Key: 'tilelive-s3/test/3/6/5.png'
+            }, function(err, res) {
                 assert.ifError(err);
-                assert.equal(res.headers['content-type'], 'image/png');
-                assert.equal(res.headers['content-length'], '827');
-                assert.equal(res.headers['content-encoding'], undefined);
+                assert.equal(res.ContentType, 'image/png');
+                assert.equal(res.ContentLength, '827');
                 putTile2();
             });
         }
