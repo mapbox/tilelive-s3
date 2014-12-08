@@ -426,6 +426,7 @@ var expected = {
     search: 'Canada, CA'
 };
 
+var nogeocoder = new S3({data:JSON.parse(fs.readFileSync(__dirname + '/fixtures/vector.s3'))}, function() {});
 var from = new S3({data:JSON.parse(fs.readFileSync(__dirname + '/fixtures/geocoder.s3'))}, function() {});
 var prefixed = new S3({data:JSON.parse(fs.readFileSync(__dirname + '/fixtures/geocoder.prefixed.s3'))}, function() {});
 
@@ -441,6 +442,14 @@ tape('getGeocoderData (prefixed source)', function(assert) {
     prefixed.getGeocoderData('term', 0, function(err, buffer) {
         assert.ifError(err);
         assert.equal(3891, buffer.length);
+        assert.end();
+    });
+});
+
+tape('getGeocoderData (no geocoder)', function(assert) {
+    nogeocoder.getGeocoderData('term', 0, function(err, buffer) {
+        assert.ifError(err);
+        assert.equal(buffer, undefined);
         assert.end();
     });
 });
