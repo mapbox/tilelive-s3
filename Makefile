@@ -5,6 +5,6 @@ clean:
 	@rm -rf ./lib/binding ./build
 
 test: build
-	@PATH=node_modules/mocha/bin:${PATH} mocha -R spec
+	./node_modules/.bin/tape test/*.test.js
 
 .PHONY: build clean test
