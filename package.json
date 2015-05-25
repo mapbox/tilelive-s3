@@ -5,10 +5,13 @@
     "aws-sdk": "~2.0.17",
     "knox": "0.8.x",
     "locking": "^2.0.0",
-    "node-pre-gyp": "0.5.x",
+    "node-pre-gyp": "~0.6.7",
     "tilejson": "0.12.x",
     "tiletype": "0.1.x"
   },
+  "bundledDependencies": [
+      "node-pre-gyp"
+  ],
   "devDependencies": {
     "tape": "3.0.x",
     "hat": "0.0.3"
