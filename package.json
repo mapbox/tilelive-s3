@@ -6,7 +6,7 @@
     "knox": "0.8.x",
     "locking": "^2.0.0",
     "node-pre-gyp": "~0.6.7",
-    "tilejson": "https://github.com/mapbox/node-tilejson/tarball/bump-agentkeepalive",
+    "tilejson": "0.13.x",
     "tiletype": "0.1.x"
   },
   "bundledDependencies": [
