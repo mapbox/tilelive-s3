@@ -3,6 +3,7 @@
 
 #include "mavericks_clang_shim.hpp"
 #include <v8.h>
+#include <nan.h>
 #include <node.h>
 #include <node_version.h>
 #include <node_buffer.h>
@@ -56,10 +57,7 @@ typedef HASH_NAMESPACE::shared_ptr<Image> ImagePtr;
         node::FatalException(try_catch);                                       \
     }                                                                          }
 
-#define TYPE_EXCEPTION(message)                                                \
-    ThrowException(Exception::TypeError(String::New(message)))
-
-v8::Handle<v8::Value> Decode(const v8::Arguments& args);
+NAN_METHOD(Decode);
 WORKER_BEGIN(Work_Decode);
 WORKER_BEGIN(Work_AfterDecode);
 

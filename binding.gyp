@@ -6,7 +6,8 @@
                   "src/reader.cpp"
       ],
       'include_dirs': [
-          './src'
+          './src',
+          "<!(node -e \"require('nan')\")"
       ],
       'cflags_cc!': ['-fno-rtti', '-fno-exceptions'],
       'cflags_cc' : [
