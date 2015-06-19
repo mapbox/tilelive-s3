@@ -140,6 +140,8 @@ NAN_METHOD(Decode) {
 
     NanScope();
 
+    Persistent<Object> persistentHandle;
+
     std::auto_ptr<DecodeBaton> baton(new DecodeBaton());
 
     Local<Object> options;
@@ -155,25 +157,27 @@ NAN_METHOD(Decode) {
             NanTypeError("Second argument must be a function.");
             NanReturnUndefined();
         }
-        baton->callback = Persistent<Function>::New(Local<Function>::Cast(args[1]));
+        NanAssignPersistent(baton->callback, args[1].As<Function>());
     }
 
-    Local<Value> buffer = args[0];
+
+    Local<Value> buffer = args[0].As<Object>();
     if (!Buffer::HasInstance(args[0])) {
         NanTypeError("First argument must be a buffer.");
         NanReturnUndefined();
     }
 
     ImagePtr image(new Image());
-    image->buffer = Persistent<Object>::New(buffer->ToObject());
+
+    NanAssignPersistent(image->buffer, buffer.As<Object>());
 
     if (image->buffer.IsEmpty()) {
         NanTypeError("All elements must be Buffers or objects with a 'buffer' property.");
         NanReturnUndefined();
     }
 
-    image->data = (unsigned char*)node::Buffer::Data(image->buffer);
-    image->dataLength = node::Buffer::Length(image->buffer);
+    image->data = (unsigned char*)node::Buffer::Data(image->buffer.As<Object>());
+    image->dataLength = node::Buffer::Length(image->buffer.As<Object>());
     baton->image = image;
 
     QUEUE_WORK(baton.release(), Work_Decode, (uv_after_work_cb)Work_AfterDecode);
