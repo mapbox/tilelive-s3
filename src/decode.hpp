@@ -52,7 +52,7 @@ typedef HASH_NAMESPACE::shared_ptr<Image> ImagePtr;
 
 #define TRY_CATCH_CALL(context, callback, argc, argv)                          \
 {   v8::TryCatch try_catch;                                                    \
-    (callback)->Call((context), (argc), (argv));                               \
+    (callback).Call((context), (argc), (argv));                               \
     if (try_catch.HasCaught()) {                                               \
         node::FatalException(try_catch);                                       \
     }                                                                          }
@@ -92,14 +92,14 @@ struct DecodeBaton {
     }
 
     ~DecodeBaton() {
-        (*image).buffer.Dispose();
+        NanDisposePersistent((*image).buffer);
 
 #if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION <= 4
         ev_unref(EV_DEFAULT_UC);
 #endif
         // Note: The result buffer is freed by the node Buffer's free callback
 
-        callback.Dispose();
+        NanDisposePersistent(callback);
     }
 };
 
