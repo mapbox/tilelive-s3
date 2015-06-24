@@ -113,7 +113,7 @@ WORKER_BEGIN(Work_AfterDecode) {
         // In the success case, node's Buffer implementation frees the result pointer for us.
         Local<Value> argv[] = {
             NanNull(),
-            NanNew(Buffer::New((char*)baton->result, baton->resultLength, freeBuffer, NULL)->handle_),
+            NanNew(Buffer::New((char*)baton->result, baton->resultLength, freeBuffer, NULL)),
             NanNew(warnings)
         };
         TRY_CATCH_CALL(NanGetCurrentContext()->Global(), baton->callback, 3, argv);
