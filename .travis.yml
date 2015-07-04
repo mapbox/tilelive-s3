@@ -41,10 +41,11 @@ before_install:
      export CC="clang-3.5";
    fi;
  - source ./test/install_node.sh ${NODE_VERSION}
- - source ./test/build-static.sh
+ - source ./test/install_libpng.sh
+
 
 install:
- - npm install --build-from-source
+ - npm install --build-from-source --clang=1
 
 script:
  - npm test
