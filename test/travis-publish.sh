@@ -3,7 +3,7 @@
 set -e
 
 # Inspect binary.
-if [ $platform == "linux" ]; then
+if [[ $(uname -s) == "Linux" ]]; then
     ldd ./lib/binding/tilelive_s3.node
 else
     otool -L ./lib/binding/tilelive_s3.node

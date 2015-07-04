@@ -13,7 +13,7 @@ void freeBuffer(char *data, void *hint) {
     data = NULL;
 }
 
-WORKER_BEGIN(Work_Decode) {
+void Work_Decode(uv_work_t* req) {
     DecodeBaton* baton = static_cast<DecodeBaton*>(req->data);
 
     Image *image = baton->image.get();
@@ -97,7 +97,7 @@ WORKER_BEGIN(Work_Decode) {
     WORKER_END();
 }
 
-WORKER_BEGIN(Work_AfterDecode) {
+void Work_AfterDecode(uv_work_t* req) {
     NanScope();
 
     DecodeBaton* baton = static_cast<DecodeBaton*>(req->data);
@@ -113,10 +113,10 @@ WORKER_BEGIN(Work_AfterDecode) {
         // In the success case, node's Buffer implementation frees the result pointer for us.
         Local<Value> argv[] = {
             NanNull(),
-            NanNew(Buffer::New((char*)baton->result, baton->resultLength, freeBuffer, NULL)),
+            NanNewBufferHandle((char*)baton->result, baton->resultLength),
             NanNew(warnings)
         };
-        TRY_CATCH_CALL(NanGetCurrentContext()->Global(), baton->callback, 3, argv);
+        NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(baton->callback), 3, argv);
     } else {
         Local<Value> argv[] = {
             NanNew<Value>(Exception::Error(NanNew<String>(baton->message.c_str())))
@@ -129,11 +129,10 @@ WORKER_BEGIN(Work_AfterDecode) {
         }
 
         assert(!baton->callback.IsEmpty());
-        TRY_CATCH_CALL(NanGetCurrentContext()->Global(), baton->callback, 1, argv);
+        NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(baton->callback), 1, argv);
     }
-
+    NanDisposePersistent(baton->callback);
     delete baton;
-    WORKER_END();
 }
 
 NAN_METHOD(Decode) {
@@ -169,15 +168,16 @@ NAN_METHOD(Decode) {
 
     ImagePtr image(new Image());
 
-    NanAssignPersistent(image->buffer, buffer.As<Object>());
+    Local<Object> buf = buffer.As<Object>();
+    NanAssignPersistent(image->buffer, buf);
 
     if (image->buffer.IsEmpty()) {
         NanTypeError("All elements must be Buffers or objects with a 'buffer' property.");
         NanReturnUndefined();
     }
 
-    image->data = (unsigned char*)node::Buffer::Data(image->buffer.As<Object>());
-    image->dataLength = node::Buffer::Length(image->buffer.As<Object>());
+    image->data = (unsigned char*)node::Buffer::Data(buf);
+    image->dataLength = node::Buffer::Length(buf);
     baton->image = image;
 
     QUEUE_WORK(baton.release(), Work_Decode, (uv_after_work_cb)Work_AfterDecode);

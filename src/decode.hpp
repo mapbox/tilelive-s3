@@ -1,17 +1,13 @@
 #ifndef NODE_DECODE_SRC_DECODE_H
 #define NODE_DECODE_SRC_DECODE_H
 
-#include "mavericks_clang_shim.hpp"
-#include <v8.h>
 #include <nan.h>
-#include <node.h>
-#include <node_version.h>
-#include <node_buffer.h>
+
 #include <png.h>
 
 #include <cstdlib>
 #include <cstring>
-
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -48,24 +44,13 @@ struct Image {
     std::auto_ptr<ImageReader> reader;
 };
 
-typedef HASH_NAMESPACE::shared_ptr<Image> ImagePtr;
+typedef std::shared_ptr<Image> ImagePtr;
 
-#define TRY_CATCH_CALL(context, callback, argc, argv)                          \
-{   v8::TryCatch try_catch;                                                    \
-    (callback).Call((context), (argc), (argv));                               \
-    if (try_catch.HasCaught()) {                                               \
-        node::FatalException(try_catch);                                       \
-    }                                                                          }
 
 NAN_METHOD(Decode);
-WORKER_BEGIN(Work_Decode);
-WORKER_BEGIN(Work_AfterDecode);
-
 
 struct DecodeBaton {
-#if NODE_MINOR_VERSION >= 5 || NODE_MAJOR_VERSION > 0
     uv_work_t request;
-#endif
     v8::Persistent<v8::Function> callback;
     ImagePtr image;
 
