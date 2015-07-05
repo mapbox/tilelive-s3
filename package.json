@@ -22,9 +22,6 @@
     "install": "node-pre-gyp install --fallback-to-build",
     "test": "tape test/*.test.js"
   },
-  "engines": {
-    "node": "0.10.x"
-  },
   "binary": {
     "module_name": "tilelive_s3",
     "module_path": "./lib/binding/",
