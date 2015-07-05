@@ -58,21 +58,15 @@ struct DecodeBaton {
         result(NULL),
         resultLength(0)
     {
-#if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION <= 4
-        ev_ref(EV_DEFAULT_UC);
-#else
         this->request.data = this;
-#endif
     }
 
     ~DecodeBaton() {
+        if (result) {
+            free(result);
+            result = NULL;
+        }
         NanDisposePersistent((*image).buffer);
-
-#if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION <= 4
-        ev_unref(EV_DEFAULT_UC);
-#endif
-        // Note: The result buffer is freed by the node Buffer's free callback
-
         NanDisposePersistent(callback);
     }
 };
