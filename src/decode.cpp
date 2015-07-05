@@ -124,7 +124,6 @@ void Work_AfterDecode(uv_work_t* req) {
         assert(!baton->callback.IsEmpty());
         NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(baton->callback), 1, argv);
     }
-    NanDisposePersistent(baton->callback);
     delete baton;
 }
 
