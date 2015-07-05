@@ -132,8 +132,6 @@ NAN_METHOD(Decode) {
 
     NanScope();
 
-    Persistent<Object> persistentHandle;
-
     std::unique_ptr<DecodeBaton> baton(new DecodeBaton());
 
     Local<Object> options;
