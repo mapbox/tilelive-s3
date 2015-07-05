@@ -8,21 +8,16 @@ using namespace node;
 
 namespace tilelive_s3 {
 
-void freeBuffer(char *data, void *hint) {
-    free(data);
-    data = NULL;
-}
-
 void Work_Decode(uv_work_t* req) {
     DecodeBaton* baton = static_cast<DecodeBaton*>(req->data);
 
     Image *image = baton->image.get();
-    std::auto_ptr<ImageReader> layer(ImageReader::create(image->data, image->dataLength));
+    std::unique_ptr<ImageReader> layer(ImageReader::create(image->data, image->dataLength));
 
     // Error out on invalid images.
     if (layer.get() == NULL || layer->width == 0 || layer->height == 0) {
         baton->message = layer->message;
-        WORKER_END();
+        return;
     }
 
     int visibleWidth = (int)layer->width + image->x;
@@ -35,7 +30,7 @@ void Work_Decode(uv_work_t* req) {
     if (!layer->decode()) {
         // Decoding failed.
         baton->message = layer->message;
-        WORKER_END();
+        return;
     }
     else if (layer->warnings.size()) {
         std::vector<std::string>::iterator pos = layer->warnings.begin();
@@ -58,14 +53,14 @@ void Work_Decode(uv_work_t* req) {
     // Convenience aliases.
     image->width = layer->width;
     image->height = layer->height;
-    image->reader = layer;
+    image->reader = std::move(layer);
 
     int pixels = baton->width * baton->height;
     if (pixels <= 0) {
         std::ostringstream msg;
         msg << "Image dimensions " << baton->width << "x" << baton->height << " are invalid";
         baton->message = msg.str();
-        WORKER_END();
+        return;
     }
 
     baton->result = (unsigned char *)malloc(sizeof(unsigned char) * pixels);
@@ -93,8 +88,6 @@ void Work_Decode(uv_work_t* req) {
         sourcePos += image->width;
         targetPos += baton->width;
     }
-
-    WORKER_END();
 }
 
 void Work_AfterDecode(uv_work_t* req) {
@@ -141,7 +134,7 @@ NAN_METHOD(Decode) {
 
     Persistent<Object> persistentHandle;
 
-    std::auto_ptr<DecodeBaton> baton(new DecodeBaton());
+    std::unique_ptr<DecodeBaton> baton(new DecodeBaton());
 
     Local<Object> options;
     if (args.Length() == 0) {
@@ -178,9 +171,9 @@ NAN_METHOD(Decode) {
 
     image->data = (unsigned char*)node::Buffer::Data(buf);
     image->dataLength = node::Buffer::Length(buf);
-    baton->image = image;
+    baton->image = std::move(image);
 
-    QUEUE_WORK(baton.release(), Work_Decode, (uv_after_work_cb)Work_AfterDecode);
+    uv_queue_work(uv_default_loop(), &(baton.release())->request, Work_Decode, (uv_after_work_cb)Work_AfterDecode);
 
     NanReturnUndefined();
 }
