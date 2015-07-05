@@ -13,17 +13,6 @@
 
 #include "reader.hpp"
 
-
-#if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION <= 4
-    #define WORKER_BEGIN(name)                  int name(eio_req *req)
-    #define WORKER_END()                        return 0;
-    #define QUEUE_WORK(baton, worker, after)    eio_custom((worker), EIO_PRI_DEFAULT, (after), (baton));
-#else
-    #define WORKER_BEGIN(name)                  void name(uv_work_t *req)
-    #define WORKER_END()                        return;
-    #define QUEUE_WORK(baton, worker, after)    uv_queue_work(uv_default_loop(), &(baton)->request, (worker), (after));
-#endif
-
 namespace tilelive_s3 {
 
 typedef v8::Persistent<v8::Object> PersistentObject;
@@ -41,10 +30,10 @@ struct Image {
     size_t dataLength;
     int x, y;
     int width, height;
-    std::auto_ptr<ImageReader> reader;
+    std::unique_ptr<ImageReader> reader;
 };
 
-typedef std::shared_ptr<Image> ImagePtr;
+typedef std::unique_ptr<Image> ImagePtr;
 
 
 NAN_METHOD(Decode);
