@@ -114,15 +114,12 @@ void Work_AfterDecode(uv_work_t* req) {
         Local<Value> argv[] = {
             NanNew<Value>(Exception::Error(NanNew<String>(baton->message.c_str())))
         };
-
-        // In the error case, we have to manually free this.
-        if (baton->result) {
-            free(baton->result);
-            baton->result = NULL;
-        }
-
         assert(!baton->callback.IsEmpty());
         NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(baton->callback), 1, argv);
+    }
+    if (baton->result) {
+        free(baton->result);
+        baton->result = NULL;
     }
     delete baton;
 }
