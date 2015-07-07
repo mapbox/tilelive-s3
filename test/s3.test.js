@@ -44,6 +44,16 @@ tape('setup', function(assert) {
         assert.end();
     });
 });
+tape('setup', function(assert) {
+    var png = fs.readFileSync(fixtures + '/tile.png');
+    s3.startWriting(function(err) {
+        assert.ifError(err);
+        s3.putTile(3, 6, 5, png, function(err) {
+            assert.ifError(err);
+            assert.end();
+        });
+    });
+});
 
     tape('should load the alpha mask for a tile', function(assert) {
         s3._loadTileMask(3, 6, 5, function(err, mask) {
