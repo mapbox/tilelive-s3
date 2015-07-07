@@ -14,6 +14,7 @@ var url = require('url');
 delete process.env.TILELIVE_S3_DRYRUN;
 delete process.env.TILELIVE_S3_STATS;
 
+var tmpid = +new Date();
 var s3;
 var vt;
 var nf;
@@ -164,6 +165,22 @@ tape('setup', function(assert) {
     }, assert.end);
 });
 
+tape('setup', function(assert) {
+    new S3('s3://mapbox/tilelive-s3/test-put/' + tmpid + '/{z}/{x}/{y}.png', function(err, source) {
+        assert.ifError(err);
+        s3 = source;
+        assert.end();
+    });
+});
+
+tape('setup', function(assert) {
+    new S3('s3://mapbox/tilelive-s3/test-put/' + tmpid + '/{z}/{x}/{y}.vector.pbf', function(err, source) {
+        assert.ifError(err);
+        vt = source;
+        assert.end();
+    });
+});
+
 tape('puts a PNG tile', function(assert) {
     var png = fs.readFileSync(fixtures + '/tile.png');
     var get = s3._stats.get;
@@ -193,7 +210,7 @@ tape('puts a PNG tile', function(assert) {
     function head() {
         awss3.headObject({
             Bucket: 'mapbox',
-            Key: 'tilelive-s3/test/3/6/5.png'
+            Key: 'tilelive-s3/test-put/' + tmpid + '/3/6/5.png'
         }, function(err, res) {
             assert.ifError(err);
             assert.equal(res.ContentType, 'image/png');
@@ -293,7 +310,7 @@ tape('puts a PBF tile', function(assert) {
             assert.ifError(err);
             awss3.headObject({
                 Bucket: 'mapbox',
-                Key: 'tilelive-s3/vector/3/6/5.vector.pbf'
+                Key: 'tilelive-s3/test-put/' + tmpid + '/3/6/5.vector.pbf'
             }, function(err, res) {
                 assert.ifError(err);
                 assert.equal(res.ContentType, 'application/x-protobuf');
