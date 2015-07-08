@@ -84,8 +84,8 @@ tape('putTile retry on PUT timeout', function(assert) {
         source.startWriting(function(err) {
             if (err) return done(err);
             source.putTile(3, 6, 5, png, function(err) {
-                assert.equal(err.message, 'Timed out after 5000ms');
-                assert.equal(err.status, 504);
+                assert.equal(err.message, 'ETIMEDOUT');
+                assert.equal(err.status, undefined);
                 assert.end();
             });
         });
