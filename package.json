@@ -7,7 +7,7 @@
     "locking": "^2.0.0",
     "nan": "^1.8.4",
     "node-pre-gyp": "~0.6.7",
-    "tilejson": "0.13.x",
+    "tilejson": "https://github.com/mapbox/node-tilejson/tarball/request",
     "tiletype": "0.1.x"
   },
   "bundledDependencies": [
