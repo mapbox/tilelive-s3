@@ -1,30 +1,54 @@
 language: cpp
-os:
-- linux
-- osx
-compiler:
-- gcc
+
+sudo: false
+
+addons:
+  apt:
+    sources:
+     - ubuntu-toolchain-r-test
+     - llvm-toolchain-precise-3.5
+    packages:
+     - clang-3.5
+
+matrix:
+  include:
+     # Linux
+     - os: linux
+       compiler: clang
+       env: NODE_VERSION="0.12.6" # node abi 14
+     - os: linux
+       compiler: clang
+       env: NODE_VERSION="0.10.38" # node abi 11
+     # OS X
+     - os: osx
+       compiler: clang
+       env: NODE_VERSION="0.12.6" # node abi 14
+     - os: osx
+       compiler: clang
+       env: NODE_VERSION="0.10.38" # node abi 11
+
 env:
-  matrix:
-  - NODE_NVM_VERSION="0.10"
   global:
-  - secure: SNKAav+ZYneBNqdXu5qpwQXmLgyrjD4ACxHmgn78o6+L1jLpfHX6VhCrPhDOEnG5wqz0rZBPsW2sBuhlDe56WKFqeGEfXo792XeZr/dbO8F5x4BqIeSEkH1C9yE0HdMtXZ6Ox2Oaf3vsyp+s3dtJkgtkkCqbNEDBsDVm7OY0QU8=
-  - secure: hSZG303w6N1C5SpguVngjLuYlyku7ODNuqU3ZBaHhQvXQxWPjFfKmYvbP0iBz/RPmz4KA7j+fObsq7+cA+6NjtfoPpus6h7bIDERylTqHnFC4FEaWrY+ATH3WlWgrNsPJpVrsGmV9bxeJgAeeWp3YnPld4nxlizCYaHWg9HEo2A=
-  - secure: "Z7g8V0gOqE1r0GyT8NxI7EsjLixC/YlI22iH6n9Ar92X0Dhc7N2wS5FNKILMIICLzJGvCFFA/oc15qcDfkDDeUwq7uGs2cxdTinKZwbGPnfEJ1nuK6VdJfmfdIepGUaiOMQg5UyM8Zi8RBzaW2vP6DO/6Q7a4G0J/V3GNcE1hYg="
-  - secure: "N/oZKx7VKaWdhjQhwRPnO1UfjAmuGE3bmB+4lmGTkEoupo5/g1O2V5bPqPoMQqjQEOlRTZqXx4zu9yF/Ew8Ie7Ra35tNbKYz84xS+5UIK/5FgOshi5z1H+nyzs18oTrM1b5cYqAU14eyaEdUD01Vl30dWAD0MfWbVb9fNdLq+8o="
+   - JOBS: "8"
+   - secure: SNKAav+ZYneBNqdXu5qpwQXmLgyrjD4ACxHmgn78o6+L1jLpfHX6VhCrPhDOEnG5wqz0rZBPsW2sBuhlDe56WKFqeGEfXo792XeZr/dbO8F5x4BqIeSEkH1C9yE0HdMtXZ6Ox2Oaf3vsyp+s3dtJkgtkkCqbNEDBsDVm7OY0QU8=
+   - secure: hSZG303w6N1C5SpguVngjLuYlyku7ODNuqU3ZBaHhQvXQxWPjFfKmYvbP0iBz/RPmz4KA7j+fObsq7+cA+6NjtfoPpus6h7bIDERylTqHnFC4FEaWrY+ATH3WlWgrNsPJpVrsGmV9bxeJgAeeWp3YnPld4nxlizCYaHWg9HEo2A=
+   - secure: "Z7g8V0gOqE1r0GyT8NxI7EsjLixC/YlI22iH6n9Ar92X0Dhc7N2wS5FNKILMIICLzJGvCFFA/oc15qcDfkDDeUwq7uGs2cxdTinKZwbGPnfEJ1nuK6VdJfmfdIepGUaiOMQg5UyM8Zi8RBzaW2vP6DO/6Q7a4G0J/V3GNcE1hYg="
+   - secure: "N/oZKx7VKaWdhjQhwRPnO1UfjAmuGE3bmB+4lmGTkEoupo5/g1O2V5bPqPoMQqjQEOlRTZqXx4zu9yF/Ew8Ie7Ra35tNbKYz84xS+5UIK/5FgOshi5z1H+nyzs18oTrM1b5cYqAU14eyaEdUD01Vl30dWAD0MfWbVb9fNdLq+8o="
+
 before_install:
-- export platform=$(uname -s | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/")
-- git clone https://github.com/creationix/nvm.git ../.nvm
-- source ../.nvm/nvm.sh
-- nvm install $NODE_NVM_VERSION
-- nvm use $NODE_NVM_VERSION
-- node --version
-- npm --version
-- source ./test/build-static.sh
+ - if [[ $(uname -s) == 'Linux' ]]; then
+     export CXX="clang++-3.5";
+     export CC="clang-3.5";
+   fi;
+ - source ./test/install_node.sh ${NODE_VERSION}
+ - source ./test/install_libpng.sh
+
+
 install:
-- npm install --build-from-source
-- if [ $platform == "linux" ]; then ldd ./lib/binding/tilelive_s3.node; else otool -L ./lib/binding/tilelive_s3.node; fi
+ - npm install --build-from-source --clang=1
+
 script:
-- npm test
+ - npm test
+
 after_success:
-- ./test/travis-publish.sh
+ - ./test/travis-publish.sh

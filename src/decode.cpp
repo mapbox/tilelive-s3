@@ -8,21 +8,16 @@ using namespace node;
 
 namespace tilelive_s3 {
 
-void freeBuffer(char *data, void *hint) {
-    free(data);
-    data = NULL;
-}
-
-WORKER_BEGIN(Work_Decode) {
+void Work_Decode(uv_work_t* req) {
     DecodeBaton* baton = static_cast<DecodeBaton*>(req->data);
 
     Image *image = baton->image.get();
-    std::auto_ptr<ImageReader> layer(ImageReader::create(image->data, image->dataLength));
+    std::unique_ptr<ImageReader> layer(ImageReader::create(image->data, image->dataLength));
 
     // Error out on invalid images.
     if (layer.get() == NULL || layer->width == 0 || layer->height == 0) {
         baton->message = layer->message;
-        WORKER_END();
+        return;
     }
 
     int visibleWidth = (int)layer->width + image->x;
@@ -35,7 +30,7 @@ WORKER_BEGIN(Work_Decode) {
     if (!layer->decode()) {
         // Decoding failed.
         baton->message = layer->message;
-        WORKER_END();
+        return;
     }
     else if (layer->warnings.size()) {
         std::vector<std::string>::iterator pos = layer->warnings.begin();
@@ -58,14 +53,14 @@ WORKER_BEGIN(Work_Decode) {
     // Convenience aliases.
     image->width = layer->width;
     image->height = layer->height;
-    image->reader = layer;
+    image->reader = std::move(layer);
 
     int pixels = baton->width * baton->height;
     if (pixels <= 0) {
         std::ostringstream msg;
         msg << "Image dimensions " << baton->width << "x" << baton->height << " are invalid";
         baton->message = msg.str();
-        WORKER_END();
+        return;
     }
 
     baton->result = (unsigned char *)malloc(sizeof(unsigned char) * pixels);
@@ -93,94 +88,93 @@ WORKER_BEGIN(Work_Decode) {
         sourcePos += image->width;
         targetPos += baton->width;
     }
-
-    WORKER_END();
 }
 
-WORKER_BEGIN(Work_AfterDecode) {
-    HandleScope scope;
+void Work_AfterDecode(uv_work_t* req) {
+    NanScope();
+
     DecodeBaton* baton = static_cast<DecodeBaton*>(req->data);
 
     if (!baton->message.length() && baton->result) {
-        Local<Array> warnings = Array::New();
+        Local<Array> warnings = NanNew<Array>();
         std::vector<std::string>::iterator pos = baton->warnings.begin();
         std::vector<std::string>::iterator end = baton->warnings.end();
         for (int i = 0; pos != end; pos++, i++) {
-            warnings->Set(i, String::New((*pos).c_str()));
+            warnings->Set(i, NanNew<String>((*pos).c_str()));
         }
 
         // In the success case, node's Buffer implementation frees the result pointer for us.
         Local<Value> argv[] = {
-            Local<Value>::New(Null()),
-            Local<Value>::New(Buffer::New((char*)baton->result, baton->resultLength, freeBuffer, NULL)->handle_),
-            Local<Value>::New(warnings)
+            NanNull(),
+            NanNewBufferHandle((char*)baton->result, baton->resultLength),
+            NanNew(warnings)
         };
-        TRY_CATCH_CALL(Context::GetCurrent()->Global(), baton->callback, 3, argv);
+        NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(baton->callback), 3, argv);
     } else {
         Local<Value> argv[] = {
-            Local<Value>::New(Exception::Error(String::New(baton->message.c_str())))
+            NanNew<Value>(Exception::Error(NanNew<String>(baton->message.c_str())))
         };
-
-        // In the error case, we have to manually free this.
-        if (baton->result) {
-            free(baton->result);
-            baton->result = NULL;
-        }
-
         assert(!baton->callback.IsEmpty());
-        TRY_CATCH_CALL(Context::GetCurrent()->Global(), baton->callback, 1, argv);
+        NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(baton->callback), 1, argv);
     }
-
     delete baton;
-    WORKER_END();
 }
 
-Handle<Value> Decode(const Arguments& args) {
-    HandleScope scope;
+NAN_METHOD(Decode) {
 
-    std::auto_ptr<DecodeBaton> baton(new DecodeBaton());
+    NanScope();
+
+    std::unique_ptr<DecodeBaton> baton(new DecodeBaton());
 
     Local<Object> options;
     if (args.Length() == 0) {
-        return TYPE_EXCEPTION("First argument must be a Buffer.");
+        NanTypeError("First argument must be a Buffer.");
+        NanReturnUndefined();
     } else if (args.Length() == 1) {
-        return TYPE_EXCEPTION("Second argument must be a function");
+        NanTypeError("Second argument must be a function");
+        NanReturnUndefined();
     } else if (args.Length() == 2) {
         // No options provided.
         if (!args[1]->IsFunction()) {
-            return TYPE_EXCEPTION("Second argument must be a function.");
+            NanTypeError("Second argument must be a function.");
+            NanReturnUndefined();
         }
-        baton->callback = Persistent<Function>::New(Local<Function>::Cast(args[1]));
+        NanAssignPersistent(baton->callback, args[1].As<Function>());
     }
 
-    Local<Value> buffer = args[0];
+
+    Local<Value> buffer = args[0].As<Object>();
     if (!Buffer::HasInstance(args[0])) {
-        return TYPE_EXCEPTION("First argument must be a buffer.");
+        NanTypeError("First argument must be a buffer.");
+        NanReturnUndefined();
     }
 
     ImagePtr image(new Image());
-    image->buffer = Persistent<Object>::New(buffer->ToObject());
+
+    Local<Object> buf = buffer.As<Object>();
+    NanAssignPersistent(image->buffer, buf);
 
     if (image->buffer.IsEmpty()) {
-        return TYPE_EXCEPTION("All elements must be Buffers or objects with a 'buffer' property.");
+        NanTypeError("All elements must be Buffers or objects with a 'buffer' property.");
+        NanReturnUndefined();
     }
 
-    image->data = (unsigned char*)node::Buffer::Data(image->buffer);
-    image->dataLength = node::Buffer::Length(image->buffer);
-    baton->image = image;
+    image->data = (unsigned char*)node::Buffer::Data(buf);
+    image->dataLength = node::Buffer::Length(buf);
+    baton->image = std::move(image);
 
-    QUEUE_WORK(baton.release(), Work_Decode, (uv_after_work_cb)Work_AfterDecode);
+    uv_queue_work(uv_default_loop(), &(baton.release())->request, Work_Decode, (uv_after_work_cb)Work_AfterDecode);
 
-    return scope.Close(Undefined());
+    NanReturnUndefined();
 }
 
 
 extern "C" void init(Handle<Object> target) {
     NODE_SET_METHOD(target, "decode", Decode);
 
-    target->Set(
-        String::NewSymbol("libpng"),
-        String::NewSymbol(PNG_LIBPNG_VER_STRING),
+    target->ForceSet(
+        NanNew<String>("libpng"),
+        NanNew<String>(PNG_LIBPNG_VER_STRING),
         static_cast<PropertyAttribute>(ReadOnly | DontDelete)
     );
 }

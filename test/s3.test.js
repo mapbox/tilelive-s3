@@ -132,19 +132,25 @@ tape('setup', function(assert) {
         });
     });
 
-    tape('setup', function(assert) {
-        awss3.deleteObject({
-            Bucket: 'mapbox',
-            Key: 'tilelive-s3/test/3/6/5.png'
-        }, assert.end);
-    });
-    tape('setup', function(assert) {
-        awss3.deleteObject({
-            Bucket: 'mapbox',
-            Key: 'tilelive-s3/vector/3/6/5.png'
-        }, assert.end);
-    });
+(function() {
+    var s3;
+    var vt;
+    var tmpid = +new Date();
 
+    tape('setup', function(assert) {
+        new S3('https://mapbox.s3.amazonaws.com/tilelive-s3/test-put/' + tmpid + '/{z}/{x}/{y}.png', function(err, source) {
+            assert.ifError(err);
+            s3 = source;
+            assert.end();
+        });
+    });
+    tape('setup', function(assert) {
+        new S3('https://mapbox.s3.amazonaws.com/tilelive-s3/test-put/' + tmpid + '/{z}/{x}/{y}.vector.pbf', function(err, source) {
+            assert.ifError(err);
+            vt = source;
+            assert.end();
+        });
+    });
     tape('puts a PNG tile', function(assert) {
         var png = fs.readFileSync(fixtures + '/tile.png');
         var get = s3._stats.get;
@@ -174,7 +180,7 @@ tape('setup', function(assert) {
         function head() {
             awss3.headObject({
                 Bucket: 'mapbox',
-                Key: 'tilelive-s3/test/3/6/5.png'
+                Key: 'tilelive-s3/test-put/' + tmpid + '/3/6/5.png'
             }, function(err, res) {
                 assert.ifError(err);
                 assert.equal(res.ContentType, 'image/png');
@@ -272,7 +278,7 @@ tape('setup', function(assert) {
             assert.ifError(err);
             vt.putTile(3, 6, 5, pbf, function(err) {
                 assert.ifError(err);
-                vt.client.headFile('/tilelive-s3/vector/3/6/5.vector.pbf', function(err, res) {
+                vt.client.headFile('/tilelive-s3/test-put/' + tmpid + '/3/6/5.vector.pbf', function(err, res) {
                     assert.ifError(err);
                     assert.equal(res.headers['content-type'], 'application/x-protobuf');
                     assert.equal(res.headers['content-length'], '40115');
@@ -282,6 +288,7 @@ tape('setup', function(assert) {
             });
         });
     });
+})();
 
     tape('should return a unique tile', function(assert) {
         nf.getTile(4, 12, 11, function(err, tile, headers) {

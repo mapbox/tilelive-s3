@@ -1,28 +1,26 @@
 {
   "name": "tilelive-s3",
-  "version": "1.4.1",
+  "version": "1.4.1-nan",
   "dependencies": {
     "aws-sdk": "~2.0.17",
     "knox": "0.8.x",
     "locking": "^2.0.0",
+    "nan": "^1.8.4",
     "node-pre-gyp": "~0.6.7",
-    "tilejson": "0.13.x",
+    "tilejson": "https://github.com/mapbox/node-tilejson/tarball/request",
     "tiletype": "0.1.x"
   },
   "bundledDependencies": [
-      "node-pre-gyp"
+    "node-pre-gyp"
   ],
   "devDependencies": {
-    "tape": "3.0.x",
-    "hat": "0.0.3"
+    "hat": "0.0.3",
+    "tape": "3.0.x"
   },
   "main": "./lib/index.js",
   "scripts": {
     "install": "node-pre-gyp install --fallback-to-build",
     "test": "tape test/*.test.js"
-  },
-  "engines": {
-    "node": "0.10.x"
   },
   "binary": {
     "module_name": "tilelive_s3",
