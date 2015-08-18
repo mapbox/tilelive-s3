@@ -1,6 +1,7 @@
 // Set env key/secret before requiring tilelive-s3.
 process.env.HOME = __dirname + '/fixtures';
 
+var http = require('http');
 var tape = require('tape');
 var path = require('path');
 var fs = require('fs');
@@ -57,6 +58,16 @@ tape('setup', function(assert) {
             assert.ifError(err);
             assert.end();
         });
+    });
+});
+
+tape('invalid tiles key', function(assert) {
+    new S3({
+        data: { tiles: ['http://not-on-s3.com/clearly'] }
+    }, function(err) {
+        assert.ok(err, 'errors');
+        assert.equal(err.message, 'tiles must exist on S3', 'expected error message');
+        assert.end();
     });
 });
 
@@ -148,6 +159,32 @@ tape('should err 404', function(assert) {
     vt.getTile(2, 0, 0, function(err, tile) {
         assert.equal(err.message, 'Tile does not exist');
         assert.end();
+    });
+});
+
+tape('should pass through unexpected errors', function(assert) {
+    var mock = http.createServer(function(req, res) {
+        res.statusCode = 418;
+        res.end();
+    }).listen(53202, function() {
+        var s3 = new AWS.S3({
+            endpoint: 'http://localhost:53202',
+            s3BucketEndpoint: true
+        });
+
+        new S3({
+            data: { tiles: ['http://fake.s3.amazonaws.com/{z}/{x}/{y}']},
+            client: s3
+        }, function(err, source) {
+            if (err) throw err;
+
+            source.getTile(0, 0, 0, function(err, data) {
+                assert.equal(err.status, 418)
+                mock.close(function() {
+                    assert.end();
+                });
+            });
+        });
     });
 });
 
