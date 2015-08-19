@@ -22,7 +22,7 @@ var nf;
 
 tape('setup', function(assert) {
     new S3({
-        pathname: fixtures + '/test.s3',
+        pathname: fixtures + '/test.s3'
     }, function(err, source) {
         assert.ifError(err);
         s3 = source;
@@ -33,6 +33,7 @@ tape('setup', function(assert) {
 tape('setup', function(assert) {
     new S3({
         pathname: fixtures + '/vector.s3',
+        acl: 'private'
     }, function(err, source) {
         assert.ifError(err);
         vt = source;
@@ -42,7 +43,7 @@ tape('setup', function(assert) {
 
 tape('setup', function(assert) {
     new S3({
-        pathname: fixtures + '/notfound.s3',
+        pathname: fixtures + '/notfound.s3'
     }, function(err, source) {
         assert.ifError(err);
         nf = source;
@@ -252,6 +253,24 @@ tape('puts a PNG tile', function(assert) {
             assert.ifError(err);
             assert.equal(res.ContentType, 'image/png');
             assert.equal(res.ContentLength, '827');
+            acl();
+        });
+    }
+
+    // Check ACL
+    function acl() {
+        awss3.getObjectAcl({
+            Bucket: 'mapbox',
+            Key: 'tilelive-s3/test-put/' + tmpid + '/3/6/5.png'
+        }, function(err, res) {
+            assert.ifError(err);
+            assert.deepEqual(res.Grants[1], {
+                Grantee: {
+                    Type: 'Group',
+                    URI: 'http://acs.amazonaws.com/groups/global/AllUsers'
+                },
+                Permission: 'READ'
+            });
             putTile2();
         });
     }
@@ -353,7 +372,14 @@ tape('puts a PBF tile', function(assert) {
                 assert.equal(res.ContentType, 'application/x-protobuf');
                 assert.equal(res.ContentLength, '40115');
                 assert.equal(res.ContentEncoding, 'gzip');
-                assert.end();
+                awss3.getObjectAcl({
+                    Bucket: 'mapbox',
+                    Key: 'tilelive-s3/test-put/' + tmpid + '/3/6/5.vector.pbf'
+                }, function(err, res) {
+                    assert.ifError(err);
+                    assert.deepEqual(res.Grants.length, 1);
+                    assert.end();
+                });
             });
         });
     });
