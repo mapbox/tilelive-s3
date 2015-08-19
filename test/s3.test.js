@@ -212,7 +212,7 @@ tape('setup', function(assert) {
 });
 
 tape('setup', function(assert) {
-    new S3('s3://mapbox/tilelive-s3/test-put/' + tmpid + '/{z}/{x}/{y}.vector.pbf', function(err, source) {
+    new S3('s3://mapbox/tilelive-s3/test-put/' + tmpid + '/{z}/{x}/{y}.vector.pbf?acl=private', function(err, source) {
         assert.ifError(err);
         vt = source;
         assert.end();
