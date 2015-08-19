@@ -198,7 +198,7 @@ tape('setup', function(assert) {
 tape('setup', function(assert) {
     awss3.deleteObject({
         Bucket: 'mapbox',
-        Key: 'tilelive-s3/vector/3/6/5.png'
+        Key: 'tilelive-s3/vector/3/6/5.vector.pbf'
     }, assert.end);
 });
 
