@@ -1,6 +1,6 @@
 {
   "name": "tilelive-s3",
-  "version": "2.0.0-dev4",
+  "version": "2.0.0-dev5",
   "dependencies": {
     "agentkeepalive": "^2.0.2",
     "aws-sdk": "^2.1.44",
