@@ -26,7 +26,8 @@ var mock = http.createServer(function (req, res) {
         hangup: /^\/hangup(get|put)(\/\d){3}.png$/,
         rate: /^\/rate(get|put)(\/\d){3}.png$/,
         internal: /^\/internal(get|put)(\/\d){3}.png$/,
-        nobody: /^\/nobodyput(\/\d){3}.png$/
+        nobody: /^\/nobodyput(\/\d){3}.png$/,
+        length: /^\/lengthget(\/\d){3}.png$/
     };
 
 
@@ -47,7 +48,7 @@ var mock = http.createServer(function (req, res) {
             return req.socket.destroy();
 
         res.writeHead(200);
-        res.end();
+        return res.end();
     }
 
     if (routes.rate.test(req.url)) {
@@ -57,7 +58,7 @@ var mock = http.createServer(function (req, res) {
         }
 
         res.writeHead(200);
-        res.end();
+        return res.end();
     }
 
     if (routes.internal.test(req.url)) {
@@ -67,19 +68,24 @@ var mock = http.createServer(function (req, res) {
         }
 
         res.writeHead(200);
-        res.end();
+        return res.end();
     }
 
     if (routes.nobody.test(req.url)) {
-        console.log(req.method, req.url)
         if (req.method === 'PUT') {
             res.writeHead(503);
             return res.end();
         }
 
         res.writeHead(200);
-        res.end();
+        return res.end();
     }
+
+    if (routes.length.test(req.url)) {
+        res.writeHead(200, { 'Content-Length': 100 });
+        res.end('Not 100 characters');
+        return req.socket.destroy();
+    };
 
     res.writeHead(404);
     res.end();
@@ -400,6 +406,27 @@ test('putTile no retry on PUT http error (no body)', function(assert) {
                 assert.equal(err.message, 'S3 put failed: 503 Unknown');
                 assert.equal(err.status, 503, 'expected status');
                 assert.equal(attempts, 2, 'no retries');
+                assert.end();
+            });
+        });
+    });
+});
+
+test('getTile retry on content-length mismatch', function(assert) {
+    new S3({
+        data: {
+            tiles: [ 'http://dummy-bucket.s3.amazonaws.com/lengthget/{z}/{x}/{y}.png' ]
+        }
+    }, function(err, source) {
+        assert.ifError(err);
+
+        source.startWriting(function(err) {
+            if (err) return done(err);
+            source.getTile(3, 6, 5, function(err) {
+                assert.equal(err.code, 'TruncatedResponseError', 'expected error code')
+                assert.equal(err.message, 'Content-Length does not match response body length', 'expected message');
+                assert.equal(err.status, 500, 'expected status');
+                assert.equal(attempts, 5, 'retried 4 times');
                 assert.end();
             });
         });
