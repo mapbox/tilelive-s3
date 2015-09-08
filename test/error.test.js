@@ -26,7 +26,7 @@ var mock = http.createServer(function (req, res) {
         hangup: /^\/hangup(get|put)(\/\d){3}.png$/,
         rate: /^\/rate(get|put)(\/\d){3}.png$/,
         internal: /^\/internal(get|put)(\/\d){3}.png$/,
-        nobody: /^\/nobodyput(\/\d){3}.png$/,
+        nobody: /^\/nobody(get|put)(\/\d){3}.png$/,
         length: /^\/lengthget(\/\d){3}.png$/
     };
 
@@ -72,7 +72,7 @@ var mock = http.createServer(function (req, res) {
     }
 
     if (routes.nobody.test(req.url)) {
-        if (req.method === 'PUT') {
+        if (req.method.toLowerCase() === req.url.match(routes.nobody)[1]) {
             res.writeHead(503);
             return res.end();
         }
@@ -405,7 +405,27 @@ test('putTile no retry on PUT http error (no body)', function(assert) {
             source.putTile(3, 6, 5, png, function(err) {
                 assert.equal(err.message, 'S3 put failed: 503 Unknown');
                 assert.equal(err.status, 503, 'expected status');
-                assert.equal(attempts, 2, 'no retries');
+                assert.equal(attempts, 6, 'retried PUT 4 times');
+                assert.end();
+            });
+        });
+    });
+});
+
+test('getTile error with no body', function(assert) {
+    new S3({
+        data: {
+            tiles: [ 'http://dummy-bucket.s3.amazonaws.com/nobodyget/{z}/{x}/{y}.png' ]
+        }
+    }, function(err, source) {
+        assert.ifError(err);
+
+        source.startWriting(function(err) {
+            if (err) return done(err);
+            source.getTile(3, 6, 5, function(err) {
+                assert.equal(err.message, 'S3 get failed: 503 Unknown', 'expected message');
+                assert.equal(err.status, 503, 'expected status');
+                assert.equal(attempts, 5, 'retried 4 times');
                 assert.end();
             });
         });
@@ -423,7 +443,7 @@ test('getTile retry on content-length mismatch', function(assert) {
         source.startWriting(function(err) {
             if (err) return done(err);
             source.getTile(3, 6, 5, function(err) {
-                assert.equal(err.code, 'TruncatedResponseError', 'expected error code')
+                assert.equal(err.code, 'TruncatedResponseError', 'expected error code');
                 assert.equal(err.message, 'Content-Length does not match response body length', 'expected message');
                 assert.equal(err.status, 500, 'expected status');
                 assert.equal(attempts, 5, 'retried 4 times');
