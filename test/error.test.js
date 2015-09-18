@@ -128,7 +128,7 @@ test('getTile retry timeout', function(assert) {
             if (err) return done(err);
             source.getTile(3, 6, 5, function(err) {
                 assert.equal(err.message, 'Timed out after 5000ms', 'expected message');
-                assert.equal(err.status, 504, 'expected status');
+                assert.equal(err.statusCode, 504, 'expected statusCode');
                 assert.equal(attempts, 5, 'retried 4 times');
                 assert.end();
             });
@@ -148,7 +148,7 @@ test('putTile fail on GET timeout', function(assert) {
             if (err) return done(err);
             source.putTile(3, 6, 5, png, function(err) {
                 assert.equal(err.message, 'Timed out after 5000ms', 'expected message');
-                assert.equal(err.status, 504, 'expected status');
+                assert.equal(err.statusCode, 504, 'expected statusCode');
                 assert.equal(attempts, 5, 'retried GET 4 times, no put attempt');
                 assert.end();
             });
@@ -168,7 +168,7 @@ test('putTile retry on PUT timeout', function(assert) {
             if (err) return done(err);
             source.putTile(3, 6, 5, png, function(err) {
                 assert.equal(err.message, 'Timed out after 5000ms', 'expected message');
-                assert.equal(err.status, 504, 'expected status');
+                assert.equal(err.statusCode, 504, 'expected statusCode');
                 assert.equal(attempts, 6, '1 GET and retried PUT 4 times');
                 assert.end();
             });
@@ -187,7 +187,7 @@ test('getTile do not retry missing', function(assert) {
         source.startWriting(function(err) {
             if (err) return done(err);
             source.getTile(3, 6, 5, function(err) {
-                assert.equal(err.status, 404, 'expected status');
+                assert.equal(err.statusCode, 404, 'expected statusCode');
                 assert.equal(attempts, 1, 'did not retry');
                 assert.end();
             });
@@ -226,7 +226,7 @@ test('getTile retry hangups', function(assert) {
             if (err) return done(err);
             source.getTile(3, 6, 5, function(err) {
                 assert.equal(err.message, 'socket hang up', 'expected message');
-                assert.equal(err.status, 500, 'expected status');
+                assert.equal(err.statusCode, 500, 'expected statusCode');
                 assert.equal(attempts, 5, 'retried 4 times');
                 assert.end();
             });
@@ -246,7 +246,7 @@ test('putTile fails on GET hangup', function(assert) {
             if (err) return done(err);
             source.putTile(3, 6, 5, png, function(err) {
                 assert.equal(err.message, 'socket hang up', 'expected message');
-                assert.equal(err.status, 500, 'expected status');
+                assert.equal(err.statusCode, 500, 'expected statusCode');
                 assert.equal(attempts, 5, 'retried GET 4 times');
                 assert.end();
             });
@@ -266,7 +266,7 @@ test('putTile retry on PUT hangup', function(assert) {
             if (err) return done(err);
             source.putTile(3, 6, 5, png, function(err) {
                 assert.equal(err.message, 'socket hang up', 'expected message');
-                assert.equal(err.status, 500, 'expected status');
+                assert.equal(err.statusCode, 500, 'expected statusCode');
                 assert.equal(attempts, 6, 'retried PUT 4 times');
                 assert.end();
             });
@@ -305,7 +305,7 @@ test('putTile fails on GET unmanaged http error', function(assert) {
             if (err) return done(err);
             source.putTile(3, 6, 5, png, function(err) {
                 assert.equal(err.message, 'Reduce your request rate', 'expected message');
-                assert.equal(err.status, 503, 'expected status');
+                assert.equal(err.statusCode, 503, 'expected statusCode');
                 assert.equal(attempts, 1, 'no retries, no put attempt');
                 assert.end();
             });
@@ -325,7 +325,7 @@ test('putTile fails on PUT unmanaged http error', function(assert) {
             if (err) return done(err);
             source.putTile(3, 6, 5, png, function(err) {
                 assert.equal(err.message, 'Reduce your request rate', 'expected message');
-                assert.equal(err.status, 503, 'expected status');
+                assert.equal(err.statusCode, 503, 'expected statusCode');
                 assert.equal(attempts, 2, 'no retries');
                 assert.end();
             });
@@ -345,7 +345,7 @@ test('getTile retry internal error', function(assert) {
             if (err) return done(err);
             source.getTile(3, 6, 5, function(err) {
                 assert.equal(err.message, 'unknown error', 'expected message');
-                assert.equal(err.status, 500, 'expected status');
+                assert.equal(err.statusCode, 500, 'expected statusCode');
                 assert.equal(attempts, 5, 'retried 4 times');
                 assert.end();
             });
@@ -365,7 +365,7 @@ test('putTile fails on GET internal error', function(assert) {
             if (err) return done(err);
             source.putTile(3, 6, 5, png, function(err) {
                 assert.equal(err.message, 'unknown error', 'expected message');
-                assert.equal(err.status, 500, 'expected status');
+                assert.equal(err.statusCode, 500, 'expected statusCode');
                 assert.equal(attempts, 5, 'retried GET 4 times, no put attempt');
                 assert.end();
             });
@@ -385,7 +385,7 @@ test('putTile retry on PUT internal error', function(assert) {
             if (err) return done(err);
             source.putTile(3, 6, 5, png, function(err) {
                 assert.equal(err.message, 'unknown error', 'expected message');
-                assert.equal(err.status, 500, 'expected status');
+                assert.equal(err.statusCode, 500, 'expected statusCode');
                 assert.equal(attempts, 6, 'retried PUT 4 times');
                 assert.end();
             });
@@ -404,7 +404,7 @@ test('putTile no retry on PUT http error (no body)', function(assert) {
             if (err) return done(err);
             source.putTile(3, 6, 5, png, function(err) {
                 assert.equal(err.message, 'S3 put failed: 503 Unknown');
-                assert.equal(err.status, 503, 'expected status');
+                assert.equal(err.statusCode, 503, 'expected statusCode');
                 assert.equal(attempts, 6, 'retried PUT 4 times');
                 assert.end();
             });
@@ -424,7 +424,7 @@ test('getTile error with no body', function(assert) {
             if (err) return done(err);
             source.getTile(3, 6, 5, function(err) {
                 assert.equal(err.message, 'S3 get failed: 503 Unknown', 'expected message');
-                assert.equal(err.status, 503, 'expected status');
+                assert.equal(err.statusCode, 503, 'expected statusCode');
                 assert.equal(attempts, 5, 'retried 4 times');
                 assert.end();
             });
@@ -445,7 +445,7 @@ test('getTile retry on content-length mismatch', function(assert) {
             source.getTile(3, 6, 5, function(err) {
                 assert.equal(err.code, 'TruncatedResponseError', 'expected error code');
                 assert.equal(err.message, 'Content-Length does not match response body length', 'expected message');
-                assert.equal(err.status, 500, 'expected status');
+                assert.equal(err.statusCode, 500, 'expected statusCode');
                 assert.equal(attempts, 5, 'retried 4 times');
                 assert.end();
             });
