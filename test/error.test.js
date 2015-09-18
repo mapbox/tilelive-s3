@@ -21,6 +21,7 @@ var png = fs.readFileSync(fixtures + '/tile.png');
 var mock = http.createServer(function (req, res) {
     attempts++;
     var routes = {
+        invalid: /^\/invalid(get|put)(\/\d){3}.png$/,
         slow: /^\/slow(get|put)(\/\d){3}.png$/,
         missing: /^\/missingget(\/\d){3}.png$/,
         hangup: /^\/hangup(get|put)(\/\d){3}.png$/,
@@ -46,6 +47,16 @@ var mock = http.createServer(function (req, res) {
     if (routes.hangup.test(req.url)) {
         if (req.method.toLowerCase() === req.url.match(routes.hangup)[1])
             return req.socket.destroy();
+
+        res.writeHead(200);
+        return res.end();
+    }
+
+    if (routes.invalid.test(req.url)) {
+        if (req.method.toLowerCase() === req.url.match(routes.invalid)[1]) {
+            res.writeHead(400);
+            return res.end(error('InvalidBucketName', 'The specified bucket is not valid'));
+        }
 
         res.writeHead(200);
         return res.end();
@@ -277,7 +288,7 @@ test('putTile retry on PUT hangup', function(assert) {
 test('getTile do not retry unmanaged http error', function(assert) {
     new S3({
         data: {
-            tiles: [ 'http://dummy-bucket.s3.amazonaws.com/rateget/{z}/{x}/{y}.png' ]
+            tiles: [ 'http://dummy-bucket.s3.amazonaws.com/invalidget/{z}/{x}/{y}.png' ]
         }
     }, function(err, source) {
         assert.ifError(err);
@@ -285,7 +296,7 @@ test('getTile do not retry unmanaged http error', function(assert) {
         source.startWriting(function(err) {
             if (err) return done(err);
             source.getTile(3, 6, 5, function(err) {
-                assert.equal(err.message, 'Reduce your request rate', 'expected message');
+                assert.equal(err.message, 'The specified bucket is not valid', 'expected message');
                 assert.equal(attempts, 1, 'did not retry');
                 assert.end();
             });
@@ -296,7 +307,7 @@ test('getTile do not retry unmanaged http error', function(assert) {
 test('putTile fails on GET unmanaged http error', function(assert) {
     new S3({
         data: {
-            tiles: [ 'http://dummy-bucket.s3.amazonaws.com/rateget/{z}/{x}/{y}.png' ]
+            tiles: [ 'http://dummy-bucket.s3.amazonaws.com/invalidget/{z}/{x}/{y}.png' ]
         }
     }, function(err, source) {
         assert.ifError(err);
@@ -304,8 +315,8 @@ test('putTile fails on GET unmanaged http error', function(assert) {
         source.startWriting(function(err) {
             if (err) return done(err);
             source.putTile(3, 6, 5, png, function(err) {
-                assert.equal(err.message, 'Reduce your request rate', 'expected message');
-                assert.equal(err.statusCode, 503, 'expected statusCode');
+                assert.equal(err.message, 'The specified bucket is not valid', 'expected message');
+                assert.equal(err.statusCode, 400, 'expected statusCode');
                 assert.equal(attempts, 1, 'no retries, no put attempt');
                 assert.end();
             });
@@ -316,7 +327,7 @@ test('putTile fails on GET unmanaged http error', function(assert) {
 test('putTile fails on PUT unmanaged http error', function(assert) {
     new S3({
         data: {
-            tiles: [ 'http://dummy-bucket.s3.amazonaws.com/rateput/{z}/{x}/{y}.png' ]
+            tiles: [ 'http://dummy-bucket.s3.amazonaws.com/invalidput/{z}/{x}/{y}.png' ]
         }
     }, function(err, source) {
         assert.ifError(err);
@@ -324,8 +335,8 @@ test('putTile fails on PUT unmanaged http error', function(assert) {
         source.startWriting(function(err) {
             if (err) return done(err);
             source.putTile(3, 6, 5, png, function(err) {
-                assert.equal(err.message, 'Reduce your request rate', 'expected message');
-                assert.equal(err.statusCode, 503, 'expected statusCode');
+                assert.equal(err.message, 'The specified bucket is not valid', 'expected message');
+                assert.equal(err.statusCode, 400, 'expected statusCode');
                 assert.equal(attempts, 2, 'no retries');
                 assert.end();
             });
@@ -403,7 +414,7 @@ test('putTile no retry on PUT http error (no body)', function(assert) {
         source.startWriting(function(err) {
             if (err) return done(err);
             source.putTile(3, 6, 5, png, function(err) {
-                assert.equal(err.message, 'S3 put failed: 503 Unknown');
+                assert.equal(err.message, '503 Unknown');
                 assert.equal(err.statusCode, 503, 'expected statusCode');
                 assert.equal(attempts, 6, 'retried PUT 4 times');
                 assert.end();
@@ -423,7 +434,7 @@ test('getTile error with no body', function(assert) {
         source.startWriting(function(err) {
             if (err) return done(err);
             source.getTile(3, 6, 5, function(err) {
-                assert.equal(err.message, 'S3 get failed: 503 Unknown', 'expected message');
+                assert.equal(err.message, '503 Unknown', 'expected message');
                 assert.equal(err.statusCode, 503, 'expected statusCode');
                 assert.equal(attempts, 5, 'retried 4 times');
                 assert.end();
