@@ -180,7 +180,7 @@ tape('should pass through unexpected errors', function(assert) {
             if (err) throw err;
 
             source.getTile(0, 0, 0, function(err, data) {
-                assert.equal(err.status, 418)
+                assert.equal(err.statusCode, 418)
                 mock.close(function() {
                     assert.end();
                 });
