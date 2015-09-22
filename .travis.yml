@@ -16,10 +16,16 @@ matrix:
      - os: linux
        compiler: clang
        env: NODE_VERSION="0.10.38" # node abi 11
+     - os: linux
+       compiler: clang
+       env: NODE_VERSION="0.12.7" # node abi 14
      # OS X
      - os: osx
        compiler: clang
        env: NODE_VERSION="0.10.38" # node abi 11
+     - os: osx
+       compiler: clang
+       env: NODE_VERSION="0.12.7" # node abi 14
 
 env:
   global:
