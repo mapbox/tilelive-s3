@@ -311,11 +311,11 @@ tape('ZXYStream (unprefixed)', function(assert) {
     });
     stream.on('end', function() {
         assert.deepEqual(lines, [
-            '0/0/0',
-            '1/0/0',
-            '1/0/1',
-            '1/1/0',
-            '1/1/1'
+            '0/0/0\n',
+            '1/0/0\n',
+            '1/0/1\n',
+            '1/1/0\n',
+            '1/1/1\n'
         ]);
         assert.end();
     });
@@ -329,13 +329,13 @@ tape('ZXYStream (prefixed)', function(assert) {
     });
     stream.on('end', function() {
         assert.deepEqual(lines, [
-            '8/0/0',
-            '8/0/1',
-            '8/1/0',
-            '8/1/1',
-            '8/2/1',
-            '8/2/2',
-            '8/15/15'
+            '8/0/0\n',
+            '8/0/1\n',
+            '8/1/0\n',
+            '8/1/1\n',
+            '8/2/1\n',
+            '8/2/2\n',
+            '8/15/15\n'
         ]);
         assert.end();
     });
