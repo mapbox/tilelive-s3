@@ -62,6 +62,14 @@ tape('setup', function(assert) {
     });
 });
 
+tape('marks source as open', function(assert) {
+    var s = new S3(url.parse('s3://mapbox/tilelive-s3/test/{z}/{x}/{y}.png'), function(err, source) {
+        assert.ifError(err, 'success');
+        assert.equal(source.open, true);
+        assert.end();
+    });
+});
+
 tape('invalid tiles key', function(assert) {
     new S3({
         data: { tiles: ['http://not-on-s3.com/clearly'] }
