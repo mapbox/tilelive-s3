@@ -126,6 +126,8 @@ tape('should return a unique tile', function(assert) {
 tape('setup source with S3 URI', function(assert) {
     new S3(url.parse('s3://mapbox/tilelive-s3/test/{z}/{x}/{y}.png'), function(err, source) {
         assert.ifError(err, 'success');
+        assert.equal(source.data.tiles[0], 'https://mapbox.s3.amazonaws.com/tilelive-s3/test/{z}/{x}/{y}.png');
+        assert.equal(source.data.geocoder_data, 'https://mapbox.s3.amazonaws.com/tilelive-s3/test');
         if (err) return assert.end();
         source.getTile(4, 12, 11, function(err, tile, headers) {
             assert.ifError(err, 'got tile');
