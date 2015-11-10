@@ -540,6 +540,14 @@ tape('source load error should fail gracefully', function(assert) {
         });
     });
 
+    tape('getGeocoderData (not found)', function(assert) {
+        from.getGeocoderData('term', 1e9, function(err, buffer) {
+            assert.ifError(err);
+            assert.equal(buffer, undefined);
+            assert.end();
+        });
+    });
+
     tape.skip('putGeocoderData', function(assert) {
         to.startWriting(function(err) {
             assert.ifError(err);
