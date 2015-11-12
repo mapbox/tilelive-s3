@@ -1,3 +1,7 @@
+## 3.1.2
+
+* Fixes for carmen integration.
+
 ## 3.1.1
 
 * Reimplement `source.open` property that was lost when uninheriting from `node-tilejson`
