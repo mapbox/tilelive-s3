@@ -639,3 +639,12 @@ tape('source load error should fail gracefully', function(assert) {
         });
     });
 })();
+
+tape('createZXYStream', function(assert) {
+    new S3(url.parse('s3://mapbox/tilelive-s3/test/{z}/{x}/{y}.png'), function(err, source) {
+        assert.ifError(err, 'success');
+        var zxyStream = source.createZXYStream();
+        assert.equal(zxyStream.readable, true, 'returns readable stream');
+        assert.end();
+    });
+});

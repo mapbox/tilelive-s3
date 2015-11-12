@@ -43,6 +43,29 @@
                         }
                     },
                     {
+                        "PolicyName": "testList",
+                        "PolicyDocument": {
+                            "Statement": [
+                                {
+                                    "Action": [
+                                        "s3:ListBucket"
+                                    ],
+                                    "Effect": "Allow",
+                                    "Resource": [
+                                        "arn:aws:s3:::mapbox"
+                                    ],
+                                    "Condition": {
+                                        "StringLike": {
+                                            "s3:prefix": [
+                                                "tilelive-s3/*"
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
                         "PolicyName": "test",
                         "PolicyDocument": {
                             "Statement": [
