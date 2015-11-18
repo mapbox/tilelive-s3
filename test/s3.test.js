@@ -70,6 +70,18 @@ tape('marks source as open', function(assert) {
     });
 });
 
+tape('reads from uri.query', function(assert) {
+    new S3(url.parse('s3://mapbox/tilelive-s3/test/{z}/{x}/{y}.png?acl=private', true), function(err, source) {
+        assert.ifError(err, 'success');
+        assert.equal(source.acl, 'private', 'sets source.acl = private');
+    });
+    new S3(url.parse('s3://mapbox/tilelive-s3/test/{z}/{x}/{y}.png?acl=private'), function(err, source) {
+        assert.ifError(err, 'success');
+        assert.equal(source.acl, 'private', 'sets source.acl = private');
+    });
+    assert.end();
+});
+
 tape('invalid tiles key', function(assert) {
     new S3({
         data: { tiles: ['http://not-on-s3.com/clearly'] }
