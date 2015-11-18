@@ -1,3 +1,7 @@
+## 3.2.0
+
+* Add optional support for `expires` header when putting tiles
+
 ## 3.1.2
 
 * Fixes for carmen integration.
