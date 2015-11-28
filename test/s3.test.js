@@ -62,6 +62,26 @@ tape('setup', function(assert) {
     });
 });
 
+tape('marks source as open', function(assert) {
+    var s = new S3(url.parse('s3://mapbox/tilelive-s3/test/{z}/{x}/{y}.png'), function(err, source) {
+        assert.ifError(err, 'success');
+        assert.equal(source.open, true);
+        assert.end();
+    });
+});
+
+tape('reads from uri.query', function(assert) {
+    new S3(url.parse('s3://mapbox/tilelive-s3/test/{z}/{x}/{y}.png?acl=private', true), function(err, source) {
+        assert.ifError(err, 'success');
+        assert.equal(source.acl, 'private', 'sets source.acl = private');
+    });
+    new S3(url.parse('s3://mapbox/tilelive-s3/test/{z}/{x}/{y}.png?acl=private'), function(err, source) {
+        assert.ifError(err, 'success');
+        assert.equal(source.acl, 'private', 'sets source.acl = private');
+    });
+    assert.end();
+});
+
 tape('invalid tiles key', function(assert) {
     new S3({
         data: { tiles: ['http://not-on-s3.com/clearly'] }
@@ -118,6 +138,8 @@ tape('should return a unique tile', function(assert) {
 tape('setup source with S3 URI', function(assert) {
     new S3(url.parse('s3://mapbox/tilelive-s3/test/{z}/{x}/{y}.png'), function(err, source) {
         assert.ifError(err, 'success');
+        assert.equal(source.data.tiles[0], 'https://mapbox.s3.amazonaws.com/tilelive-s3/test/{z}/{x}/{y}.png');
+        assert.equal(source.data.geocoder_data, 'https://mapbox.s3.amazonaws.com/tilelive-s3/test');
         if (err) return assert.end();
         source.getTile(4, 12, 11, function(err, tile, headers) {
             assert.ifError(err, 'got tile');
@@ -125,6 +147,43 @@ tape('setup source with S3 URI', function(assert) {
             assert.equal(1072, tile.length, 'got expected data');
             assert.end();
         });
+    });
+});
+
+tape('setup source with querystring expires datestring', function(assert) {
+    var expires = new Date('2020-01-01');
+    new S3('s3://mapbox/tilelive-s3/test/{z}/{x}/{y}.png?expires=' + expires.toUTCString(), function(err, source) {
+        assert.ifError(err, 'success');
+        assert.equal(source.expires.toUTCString(), expires.toUTCString());
+        assert.end();
+    });
+});
+
+tape('setup source with querystring expires from timestamp', function(assert) {
+    var expires = new Date('2020-01-01');
+    new S3('s3://mapbox/tilelive-s3/test/{z}/{x}/{y}.png?expires=' + (+expires), function(err, source) {
+        assert.ifError(err, 'success');
+        assert.equal(source.expires.toUTCString(), expires.toUTCString());
+        assert.end();
+    });
+});
+
+tape('setup source ignores invalid expires', function(assert) {
+    new S3('s3://mapbox/tilelive-s3/test/{z}/{x}/{y}.png?expires=asdfasdf', function(err, source) {
+        assert.ifError(err, 'success');
+        assert.equal(source.expires, undefined);
+        assert.end();
+    });
+});
+
+tape('setup source ignores invalid expires', function(assert) {
+    new S3({
+        data: { tiles: ['s3://mapbox/tilelive-s3/test/{z}/{x}/{y}.png'] },
+        expires: 'asdfasdf'
+    }, function(err, source) {
+        assert.ifError(err, 'success');
+        assert.equal(source.expires, undefined);
+        assert.end();
     });
 });
 
@@ -180,7 +239,7 @@ tape('should pass through unexpected errors', function(assert) {
             if (err) throw err;
 
             source.getTile(0, 0, 0, function(err, data) {
-                assert.equal(err.status, 418)
+                assert.equal(err.statusCode, 418)
                 mock.close(function() {
                     assert.end();
                 });
@@ -530,6 +589,14 @@ tape('source load error should fail gracefully', function(assert) {
         });
     });
 
+    tape('getGeocoderData (not found)', function(assert) {
+        from.getGeocoderData('term', 1e9, function(err, buffer) {
+            assert.ifError(err);
+            assert.equal(buffer, undefined);
+            assert.end();
+        });
+    });
+
     tape.skip('putGeocoderData', function(assert) {
         to.startWriting(function(err) {
             assert.ifError(err);
@@ -621,3 +688,42 @@ tape('source load error should fail gracefully', function(assert) {
         });
     });
 })();
+
+(function() {
+
+var expires = new Date(+new Date + 864e5);
+
+tape('expires PUT', function(assert) {
+    new S3('s3://mapbox/tilelive-s3/test/expires/{z}/{x}/{y}.png?expires=' + encodeURIComponent(expires.toUTCString()), function(err, source) {
+        assert.ifError(err);
+        source.startWriting(function(err) {
+            assert.ifError(err);
+            source.putTile(0, 0, 0, fs.readFileSync(fixtures + '/tile.png'), function(err) {
+                assert.ifError(err);
+                assert.end();
+            });
+        });
+    });
+});
+
+tape('expires GET', function(assert) {
+    new S3('s3://mapbox/tilelive-s3/test/expires/{z}/{x}/{y}.png', function(err, source) {
+        assert.ifError(err);
+        source.getTile(0, 0, 0, function(err, data, headers) {
+            assert.ifError(err);
+            assert.equal(data.length, 827, 'gets tile data');
+            assert.equal(headers['Expires'], expires.toUTCString(), 'has expires header');
+            assert.end();
+        });
+    });
+});
+
+tape('expires cleanup', function(assert) {
+    awss3.deleteObject({
+        Bucket: 'mapbox',
+        Key: 'tilelive-s3/test/expires/0/0/0.png'
+    }, assert.end);
+});
+
+})();
+
