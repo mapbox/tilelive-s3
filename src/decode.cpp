@@ -123,18 +123,14 @@ void Work_AfterDecode(uv_work_t* req) {
 NAN_METHOD(Decode) {
     std::unique_ptr<DecodeBaton> baton(new DecodeBaton());
 
-    Local<Object> options;
     if (info.Length() == 0) {
-        Nan::TypeError("First argument must be a Buffer.");
-        info.GetReturnValue().SetUndefined();
+        Nan::ThrowTypeError("First argument must be a Buffer.");
     } else if (info.Length() == 1) {
-        Nan::TypeError("Second argument must be a function");
-        info.GetReturnValue().SetUndefined();
+        Nan::ThrowTypeError("Second argument must be a function");
     } else if (info.Length() == 2) {
         // No options provided.
         if (!info[1]->IsFunction()) {
-            Nan::TypeError("Second argument must be a function.");
-            info.GetReturnValue().SetUndefined();
+            Nan::ThrowTypeError("Second argument must be a function.");
         }
         baton->callback.Reset(info[1].As<Function>());
     }
@@ -142,8 +138,7 @@ NAN_METHOD(Decode) {
 
     Local<Value> buffer = info[0].As<Object>();
     if (!Buffer::HasInstance(info[0])) {
-        Nan::TypeError("First argument must be a buffer.");
-        info.GetReturnValue().SetUndefined();
+        Nan::ThrowTypeError("First argument must be a buffer.");
     }
 
     ImagePtr image(new Image());
@@ -152,8 +147,7 @@ NAN_METHOD(Decode) {
     image->buffer.Reset(buf);
 
     if (image->buffer.IsEmpty()) {
-        Nan::TypeError("All elements must be Buffers or objects with a 'buffer' property.");
-        info.GetReturnValue().SetUndefined();
+        Nan::ThrowTypeError("All elements must be Buffers or objects with a 'buffer' property.");
     }
 
     image->data = (unsigned char*)node::Buffer::Data(buf);
@@ -161,8 +155,6 @@ NAN_METHOD(Decode) {
     baton->image = std::move(image);
 
     uv_queue_work(uv_default_loop(), &(baton.release())->request, Work_Decode, (uv_after_work_cb)Work_AfterDecode);
-
-    info.GetReturnValue().SetUndefined();
 }
 
 
