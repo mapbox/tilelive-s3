@@ -15,8 +15,6 @@
 
 namespace tilelive_s3 {
 
-typedef v8::Persistent<v8::Object> PersistentObject;
-
 struct Image {
     Image() :
         data(NULL),
@@ -25,7 +23,7 @@ struct Image {
         y(0),
         width(0),
         height(0) {}
-    PersistentObject buffer;
+    Nan::Persistent<v8::Object> buffer;
     unsigned char *data;
     size_t dataLength;
     int x, y;
@@ -40,7 +38,7 @@ NAN_METHOD(Decode);
 
 struct DecodeBaton {
     uv_work_t request;
-    v8::Persistent<v8::Function> callback;
+    Nan::Persistent<v8::Function> callback;
     ImagePtr image;
 
     std::string message;
@@ -66,8 +64,8 @@ struct DecodeBaton {
             free(result);
             result = NULL;
         }
-        NanDisposePersistent((*image).buffer);
-        NanDisposePersistent(callback);
+        (*image).buffer.Reset();
+        callback.Reset();
     }
 };
 
