@@ -96,7 +96,8 @@ tape('should load the alpha mask for a tile', function(assert) {
     s3._loadTileMask(3, 6, 5, function(err, mask) {
         if (err) throw err;
         assert.equal(mask.length, 65536);
-        assert.equal(crypto.createHash('md5').update(mask).digest('hex'), 'f91ed545992905450cfe38c591ef345c');
+        assert.equal(mask[236 * 256 + 72], 124, 'check mask for pixel value');
+        assert.equal(crypto.createHash('md5').update(mask).digest('hex'), 'f91ed545992905450cfe38c591ef345c', 'md5 sum');
         assert.end();
     });
 });
