@@ -597,21 +597,30 @@ tape('source load error should fail gracefully', function(assert) {
         });
     });
 
-    tape.skip('putGeocoderData', function(assert) {
-        to.startWriting(function(err) {
+    tape('putGeocoderData', function(assert) {
+        var data = Math.random().toString();
+
+        new S3('s3://mapbox/tilelive-s3/test/putGeocoderData/{z}/{x}/{y}', function(err, source) {
             assert.ifError(err);
-            to.putGeocoderData('term', 0, new Buffer('asdf'), function(err) {
+            source.startWriting(function(err) {
                 assert.ifError(err);
-                to.stopWriting(function(err) {
+                afterSetup(source);
+            });
+        });
+
+        function afterSetup(source) {
+            source.putGeocoderData('term', 0, new Buffer(data), function(err) {
+                assert.ifError(err);
+                source.stopWriting(function(err) {
                     assert.ifError(err);
-                    to.getGeocoderData('term', 0, function(err, buffer) {
+                    source.getGeocoderData('term', 0, function(err, buffer) {
                         assert.ifError(err);
-                        assert.deepEqual('asdf', buffer.toString());
+                        assert.deepEqual(data, buffer.toString());
                         assert.end();
                     });
                 });
             });
-        });
+        }
     });
 
     tape('getIndexableDocs', function(assert) {
