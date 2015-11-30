@@ -1,3 +1,7 @@
+## 3.2.1
+
+* Robustify `putTile` and `put` behavior against intermittent unmanaged S3 GET errors
+
 ## 3.2.0
 
 * Add optional support for `expires` header when putting tiles
