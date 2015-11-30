@@ -1,3 +1,7 @@
+## 3.2.3
+
+* Republished.
+
 ## 3.2.2
 
 * Additional fixes for carmen integration.
