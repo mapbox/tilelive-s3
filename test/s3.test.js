@@ -684,8 +684,11 @@ tape('source load error should fail gracefully', function(assert) {
     tape('getGrid', function(assert) {
         source.getGrid(0, 0, 0, function(err, data, headers) {
             assert.ifError(err, 'success');
+            assert.deepEqual(Object.keys(data), ['grid', 'keys', 'data'], 'grid has expected keys');
+            assert.deepEqual(data.grid.length, 64, 'grid.data.length = 64');
+            assert.deepEqual(data.keys.length, 121, 'grid.keys.length = 121');
+            assert.deepEqual(Object.keys(data.data).length, 120, 'grid.data.length = 120');
             assert.equal(headers['Content-Type'], 'application/json', 'expected content type');
-            assert.equal(headers.ETag, '"8de03081a763c624fad9f3271d990043"', 'expected ETag');
             assert.end();
         });
     });
