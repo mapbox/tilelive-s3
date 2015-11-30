@@ -149,7 +149,7 @@ test('getTile retry timeout', function(assert) {
     });
 });
 
-test('putTile fail on GET timeout', function(assert) {
+test('putTile success on GET timeout', function(assert) {
     new S3({
         data: {
             tiles: [ 'http://dummy-bucket.s3.amazonaws.com/slowget/{z}/{x}/{y}.png' ]
@@ -160,9 +160,8 @@ test('putTile fail on GET timeout', function(assert) {
         source.startWriting(function(err) {
             if (err) return done(err);
             source.putTile(3, 6, 5, png, function(err) {
-                assert.equal(err.message, 'Timed out after 5000ms', 'expected message');
-                assert.equal(err.statusCode, 504, 'expected statusCode');
-                assert.equal(attempts, 5, 'retried GET 4 times, no put attempt');
+                assert.ifError(err, 'successful put');
+                assert.equal(attempts, 6, 'retried GET 5 times + put attempt');
                 assert.end();
             });
         });
@@ -247,7 +246,7 @@ test('getTile retry hangups', function(assert) {
     });
 });
 
-test('putTile fails on GET hangup', function(assert) {
+test('putTile retry on GET hangup', function(assert) {
     new S3({
         data: {
             tiles: [ 'http://dummy-bucket.s3.amazonaws.com/hangupget/{z}/{x}/{y}.png' ]
@@ -258,9 +257,8 @@ test('putTile fails on GET hangup', function(assert) {
         source.startWriting(function(err) {
             if (err) return done(err);
             source.putTile(3, 6, 5, png, function(err) {
-                assert.equal(err.message, 'socket hang up', 'expected message');
-                assert.equal(err.statusCode, 500, 'expected statusCode');
-                assert.equal(attempts, 5, 'retried GET 4 times');
+                assert.ifError(err, 'successful put');
+                assert.equal(attempts, 6, 'retried GET 5 times + put attempt');
                 assert.end();
             });
         });
@@ -306,7 +304,7 @@ test('getTile do not retry unmanaged http error', function(assert) {
     });
 });
 
-test('putTile fails on GET unmanaged http error', function(assert) {
+test('putTile ignores GET unmanaged http error', function(assert) {
     new S3({
         data: {
             tiles: [ 'http://dummy-bucket.s3.amazonaws.com/invalidget/{z}/{x}/{y}.png' ]
@@ -317,9 +315,8 @@ test('putTile fails on GET unmanaged http error', function(assert) {
         source.startWriting(function(err) {
             if (err) return done(err);
             source.putTile(3, 6, 5, png, function(err) {
-                assert.equal(err.message, 'The specified bucket is not valid', 'expected message');
-                assert.equal(err.statusCode, 400, 'expected statusCode');
-                assert.equal(attempts, 1, 'no retries, no put attempt');
+                assert.ifError(err, 'successful put');
+                assert.equal(attempts, 2, 'no retries, 1 put attempt');
                 assert.end();
             });
         });
@@ -366,7 +363,7 @@ test('getTile retry internal error', function(assert) {
     });
 });
 
-test('putTile fails on GET internal error', function(assert) {
+test('putTile ignores GET internal error', function(assert) {
     new S3({
         data: {
             tiles: [ 'http://dummy-bucket.s3.amazonaws.com/internalget/{z}/{x}/{y}.png' ]
@@ -377,9 +374,8 @@ test('putTile fails on GET internal error', function(assert) {
         source.startWriting(function(err) {
             if (err) return done(err);
             source.putTile(3, 6, 5, png, function(err) {
-                assert.equal(err.message, '[x-amz-id-2:01234567] [x-amz-request-id:0000000000000000] unknown error', 'expected message');
-                assert.equal(err.statusCode, 500, 'expected statusCode');
-                assert.equal(attempts, 5, 'retried GET 4 times, no put attempt');
+                assert.ifError(err, 'successful put');
+                assert.equal(attempts, 6, 'retried GET 5 times + put attempt');
                 assert.end();
             });
         });
