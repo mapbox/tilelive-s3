@@ -1,3 +1,7 @@
+## 3.2.2
+
+* Additional fixes for carmen integration.
+
 ## 3.2.1
 
 * Robustify `putTile` and `put` behavior against intermittent unmanaged S3 GET errors
