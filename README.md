@@ -7,7 +7,7 @@ Extends `node-tilejson` for using S3 as a tilejson backend.
 
  - pkg-config
  - libpng
- - node >= 0.6.13 && < 0.11.0
+ - node >= 0.10
 
 Tests
 =====
