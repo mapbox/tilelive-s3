@@ -91,72 +91,63 @@ void Work_Decode(uv_work_t* req) {
 }
 
 void Work_AfterDecode(uv_work_t* req) {
-    NanScope();
+    Nan::HandleScope scope;
 
     DecodeBaton* baton = static_cast<DecodeBaton*>(req->data);
 
     if (!baton->message.length() && baton->result) {
-        Local<Array> warnings = NanNew<Array>();
+        Local<Array> warnings = Nan::New<Array>();
         std::vector<std::string>::iterator pos = baton->warnings.begin();
         std::vector<std::string>::iterator end = baton->warnings.end();
         for (int i = 0; pos != end; pos++, i++) {
-            warnings->Set(i, NanNew<String>((*pos).c_str()));
+            warnings->Set(i, Nan::New<String>((*pos).c_str()).ToLocalChecked());
         }
 
         // In the success case, node's Buffer implementation frees the result pointer for us.
         Local<Value> argv[] = {
-            NanNull(),
-            NanNewBufferHandle((char*)baton->result, baton->resultLength),
-            NanNew(warnings)
+            Nan::Null(),
+            Nan::CopyBuffer((char*)baton->result, baton->resultLength).ToLocalChecked(),
+            warnings
         };
-        NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(baton->callback), 3, argv);
+        Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 3, argv);
     } else {
         Local<Value> argv[] = {
-            NanNew<Value>(Exception::Error(NanNew<String>(baton->message.c_str())))
+            Nan::New<Value>(Exception::Error(Nan::New<String>(baton->message.c_str()).ToLocalChecked()))
         };
         assert(!baton->callback.IsEmpty());
-        NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(baton->callback), 1, argv);
+        Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 1, argv);
     }
     delete baton;
 }
 
 NAN_METHOD(Decode) {
-
-    NanScope();
-
     std::unique_ptr<DecodeBaton> baton(new DecodeBaton());
 
-    Local<Object> options;
-    if (args.Length() == 0) {
-        NanTypeError("First argument must be a Buffer.");
-        NanReturnUndefined();
-    } else if (args.Length() == 1) {
-        NanTypeError("Second argument must be a function");
-        NanReturnUndefined();
-    } else if (args.Length() == 2) {
+    if (info.Length() == 0) {
+        Nan::ThrowTypeError("First argument must be a Buffer.");
+    } else if (info.Length() == 1) {
+        Nan::ThrowTypeError("Second argument must be a function");
+    } else if (info.Length() == 2) {
         // No options provided.
-        if (!args[1]->IsFunction()) {
-            NanTypeError("Second argument must be a function.");
-            NanReturnUndefined();
+        if (!info[1]->IsFunction()) {
+            Nan::ThrowTypeError("Second argument must be a function.");
         }
-        NanAssignPersistent(baton->callback, args[1].As<Function>());
+        baton->callback.Reset(info[1].As<Function>());
     }
 
 
-    Local<Value> buffer = args[0].As<Object>();
-    if (!Buffer::HasInstance(args[0])) {
-        NanTypeError("First argument must be a buffer.");
-        NanReturnUndefined();
+    Local<Value> buffer = info[0].As<Object>();
+    if (!Buffer::HasInstance(info[0])) {
+        Nan::ThrowTypeError("First argument must be a buffer.");
     }
 
     ImagePtr image(new Image());
 
     Local<Object> buf = buffer.As<Object>();
-    NanAssignPersistent(image->buffer, buf);
+    image->buffer.Reset(buf);
 
     if (image->buffer.IsEmpty()) {
-        NanTypeError("All elements must be Buffers or objects with a 'buffer' property.");
-        NanReturnUndefined();
+        Nan::ThrowTypeError("All elements must be Buffers or objects with a 'buffer' property.");
     }
 
     image->data = (unsigned char*)node::Buffer::Data(buf);
@@ -164,17 +155,15 @@ NAN_METHOD(Decode) {
     baton->image = std::move(image);
 
     uv_queue_work(uv_default_loop(), &(baton.release())->request, Work_Decode, (uv_after_work_cb)Work_AfterDecode);
-
-    NanReturnUndefined();
 }
 
 
 extern "C" void init(Handle<Object> target) {
-    NODE_SET_METHOD(target, "decode", Decode);
+    Nan::SetMethod(target, "decode", Decode);
 
     target->ForceSet(
-        NanNew<String>("libpng"),
-        NanNew<String>(PNG_LIBPNG_VER_STRING),
+        Nan::New<String>("libpng").ToLocalChecked(),
+        Nan::New<String>(PNG_LIBPNG_VER_STRING).ToLocalChecked(),
         static_cast<PropertyAttribute>(ReadOnly | DontDelete)
     );
 }
