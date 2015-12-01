@@ -7,7 +7,7 @@
     "nan": "^2.1.0",
     "node-pre-gyp": "~0.6.7",
     "s3urls": "^1.3.0",
-    "tiletype": "0.1.x"
+    "tiletype": "0.3.x"
   },
   "bundledDependencies": [
     "node-pre-gyp"
