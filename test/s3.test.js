@@ -626,7 +626,7 @@ tape('source load error should fail gracefully', function(assert) {
                     assert.ifError(err);
                     source.getGeocoderData('term', 0, function(err, buffer) {
                         assert.ifError(err);
-                        assert.deepEqual(data, buffer.toString());
+                        assert.equal(data, buffer.toString());
                         assert.end();
                     });
                 });
