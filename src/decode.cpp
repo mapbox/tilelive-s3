@@ -106,7 +106,7 @@ void Work_AfterDecode(uv_work_t* req) {
         // In the success case, node's Buffer implementation frees the result pointer for us.
         Local<Value> argv[] = {
             Nan::Null(),
-            Nan::NewBuffer((char*)baton->result, baton->resultLength).ToLocalChecked(),
+            Nan::CopyBuffer((char*)baton->result, baton->resultLength).ToLocalChecked(),
             warnings
         };
         Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 3, argv);
