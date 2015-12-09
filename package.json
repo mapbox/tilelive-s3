@@ -4,28 +4,15 @@
   "dependencies": {
     "agentkeepalive": "^2.0.3",
     "aws-sdk": "^2.2.19",
-    "nan": "^2.1.0",
-    "node-pre-gyp": "^0.6.17",
     "s3urls": "^1.3.0",
     "tiletype": "^0.3.0"
   },
-  "bundledDependencies": [
-    "node-pre-gyp"
-  ],
   "devDependencies": {
     "hat": "0.0.3",
     "tape": "^4.2.2"
   },
   "main": "./lib/index.js",
   "scripts": {
-    "install": "node-pre-gyp install --fallback-to-build",
     "test": "tape test/index.js"
-  },
-  "binary": {
-    "module_name": "tilelive_s3",
-    "module_path": "./lib/binding/",
-    "host": "https://mapbox-node-binary.s3.amazonaws.com",
-    "remote_path": "./{name}/v{version}",
-    "package_name": "{node_abi}-{platform}-{arch}.tar.gz"
   }
 }
