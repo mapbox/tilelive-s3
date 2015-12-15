@@ -1,3 +1,8 @@
+## 4.0.0
+
+* Removed all cpp + color masking code.
+* Renamed `maskLevel` to `fillzoom`.
+
 ## 3.2.3
 
 * Republished.
