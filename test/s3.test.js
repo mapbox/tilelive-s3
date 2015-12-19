@@ -199,9 +199,10 @@ tape('setup source ignores invalid expires', function(assert) {
 });
 
 tape('should return a blank tile', function(assert) {
-    s3.getTile(4, 12, 10, function(err) {
-        assert.ok(err);
-        assert.equal(err.message, 'Tile does not exist');
+    s3.getTile(4, 12, 10, function(err, tile, headers) {
+        assert.ifError(err);
+        assert.equal(headers['Content-Type'], 'image/png');
+        assert.equal(tile.length, 755);
         assert.end();
     });
 });
