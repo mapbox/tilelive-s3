@@ -1,3 +1,7 @@
+## 4.1.0
+
+* Exposes `S3.timeout` property for overriding default S3 timeout of 5000ms
+
 ## 4.0.0
 
 * Removed all cpp + color masking code.
