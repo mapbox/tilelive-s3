@@ -1,3 +1,7 @@
+## 4.1.1
+
+* Fix inaccurate timeout error message
+
 ## 4.1.0
 
 * Exposes `S3.timeout` property for overriding default S3 timeout of 5000ms
