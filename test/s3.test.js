@@ -32,8 +32,7 @@ tape('setup', function(assert) {
 
 tape('setup', function(assert) {
     new S3({
-        pathname: fixtures + '/vector.s3',
-        acl: 'private'
+        pathname: fixtures + '/vector.s3'
     }, function(err, source) {
         assert.ifError(err);
         vt = source;
@@ -43,7 +42,8 @@ tape('setup', function(assert) {
 
 tape('setup', function(assert) {
     new S3({
-        pathname: fixtures + '/notfound.s3'
+        pathname: fixtures + '/notfound.s3',
+        acl: 'public-read'
     }, function(err, source) {
         assert.ifError(err);
         nf = source;
@@ -71,15 +71,15 @@ tape('marks source as open', function(assert) {
 });
 
 tape('reads from uri.query', function(assert) {
-    new S3(url.parse('s3://mapbox/tilelive-s3/test/{z}/{x}/{y}.png?acl=private&sse=aws:kms&sseKmsId=foo', true), function(err, source) {
+    new S3(url.parse('s3://mapbox/tilelive-s3/test/{z}/{x}/{y}.png?acl=public-read&sse=aws:kms&sseKmsId=foo', true), function(err, source) {
         assert.ifError(err, 'success');
-        assert.equal(source.acl, 'private', 'sets source.acl = private');
+        assert.equal(source.acl, 'public-read', 'sets source.acl = public-read');
         assert.equal(source.sse, 'aws:kms', 'sets source.sse = aws:kms');
         assert.equal(source.sseKmsId, 'foo', 'sets source.sseKmsId = foo');
     });
-    new S3(url.parse('s3://mapbox/tilelive-s3/test/{z}/{x}/{y}.acl png?acl=private&sse=aws:kms'), function(err, source) {
+    new S3(url.parse('s3://mapbox/tilelive-s3/test/{z}/{x}/{y}.acl png?acl=public-read&sse=aws:kms'), function(err, source) {
         assert.ifError(err, 'success');
-        assert.equal(source.acl, 'private', 'sets source.acl = acl private');
+        assert.equal(source.acl, 'public-read', 'sets source.acl = public-read');
         assert.equal(source.sse, 'aws:kms', 'sets source.sse = aws:kms');
     });
     assert.end();
@@ -231,7 +231,7 @@ tape('setup', function(assert) {
 });
 
 tape('setup', function(assert) {
-    new S3('s3://mapbox/tilelive-s3/test-put/' + tmpid + '/{z}/{x}/{y}.png?sse=AES256', function(err, source) {
+    new S3('s3://mapbox/tilelive-s3/test-put/' + tmpid + '/{z}/{x}/{y}.png?acl=public-read&sse=AES256', function(err, source) {
         assert.ifError(err);
         s3 = source;
         assert.end();
@@ -239,7 +239,7 @@ tape('setup', function(assert) {
 });
 
 tape('setup', function(assert) {
-    new S3('s3://mapbox/tilelive-s3/test-put/' + tmpid + '/{z}/{x}/{y}.vector.pbf?acl=private', function(err, source) {
+    new S3('s3://mapbox/tilelive-s3/test-put/' + tmpid + '/{z}/{x}/{y}.vector.pbf', function(err, source) {
         assert.ifError(err);
         vt = source;
         assert.end();
