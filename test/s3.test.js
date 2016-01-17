@@ -71,13 +71,16 @@ tape('marks source as open', function(assert) {
 });
 
 tape('reads from uri.query', function(assert) {
-    new S3(url.parse('s3://mapbox/tilelive-s3/test/{z}/{x}/{y}.png?acl=private', true), function(err, source) {
+    new S3(url.parse('s3://mapbox/tilelive-s3/test/{z}/{x}/{y}.png?acl=private&sse=aws:kms&sseKmsId=foo', true), function(err, source) {
         assert.ifError(err, 'success');
         assert.equal(source.acl, 'private', 'sets source.acl = private');
+        assert.equal(source.sse, 'aws:kms', 'sets source.sse = aws:kms');
+        assert.equal(source.sseKmsId, 'foo', 'sets source.sseKmsId = foo');
     });
-    new S3(url.parse('s3://mapbox/tilelive-s3/test/{z}/{x}/{y}.png?acl=private'), function(err, source) {
+    new S3(url.parse('s3://mapbox/tilelive-s3/test/{z}/{x}/{y}.acl png?acl=private&sse=aws:kms'), function(err, source) {
         assert.ifError(err, 'success');
-        assert.equal(source.acl, 'private', 'sets source.acl = private');
+        assert.equal(source.acl, 'private', 'sets source.acl = acl private');
+        assert.equal(source.sse, 'aws:kms', 'sets source.sse = aws:kms');
     });
     assert.end();
 });
@@ -228,7 +231,7 @@ tape('setup', function(assert) {
 });
 
 tape('setup', function(assert) {
-    new S3('s3://mapbox/tilelive-s3/test-put/' + tmpid + '/{z}/{x}/{y}.png', function(err, source) {
+    new S3('s3://mapbox/tilelive-s3/test-put/' + tmpid + '/{z}/{x}/{y}.png?sse=AES256', function(err, source) {
         assert.ifError(err);
         s3 = source;
         assert.end();
@@ -277,6 +280,7 @@ tape('puts a PNG tile', function(assert) {
             assert.ifError(err);
             assert.equal(res.ContentType, 'image/png');
             assert.equal(res.ContentLength, '827');
+            assert.equal(res.ServerSideEncryption, 'AES256');
             acl();
         });
     }
