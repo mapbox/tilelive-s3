@@ -503,8 +503,8 @@ tape('should use client passed in via uri', function(assert) {
 tape('_prepareURL', function(assert) {
     assert.equal(s3._prepareURL('http://dummy-bucket.s3.amazonaws.com/test/{z}/{x}/{y}.png', 1, 2, 3), 'http://dummy-bucket.s3.amazonaws.com/test/1/2/3.png');
     assert.equal(s3._prepareURL('http://dummy-bucket.s3.amazonaws.com/{prefix}/test/{z}/{x}/{y}.png', 1, 164, 250), 'http://dummy-bucket.s3.amazonaws.com/4a/test/1/164/250.png');
-    assert.equal(s3._prepareURL('http://dummy-bucket.s3.amazonaws.com/{prefix4}/test/{z}/{x}/{y}.png', 1, 164, 250), 'http://dummy-bucket.s3.amazonaws.com/a4fa/test/1/164/250.png');
-    assert.equal(s3._prepareURL('http://dummy-bucket.s3.amazonaws.com/{prefix4}/test/{z}/{x}/{y}.png', 1, 15, 10), 'http://dummy-bucket.s3.amazonaws.com/0f0a/test/1/15/10.png', 'prefix for tile coordinates > 16 is padded');
+    assert.equal(s3._prepareURL('http://dummy-bucket.s3.amazonaws.com/{murmur4}/test/{z}/{x}/{y}.png', 1, 164, 250), 'http://dummy-bucket.s3.amazonaws.com/ea77/test/1/164/250.png');
+    assert.equal(s3._prepareURL('http://dummy-bucket.s3.amazonaws.com/{murmur4}/test/{z}/{x}/{y}.png', 1, 15, 10), 'http://dummy-bucket.s3.amazonaws.com/ecca/test/1/15/10.png', 'prefix for tile coordinates > 16 is padded');
     assert.end();
 });
 
