@@ -1,3 +1,9 @@
+## 5.0.0
+
+- Default setting for `acl` is now `private`. Explicitly set `public-read` for
+  compatibility.
+- Add support for S3 server-side encryption.
+
 ## 4.1.1
 
 * Fix inaccurate timeout error message
