@@ -1,3 +1,8 @@
+## 6.0.0
+
+- Move the S3 client up into global scope
+- S3.timeout and S3.agent are no longer configurable
+
 ## 5.0.0
 
 - Default setting for `acl` is now `private`. Explicitly set `public-read` for
