@@ -504,6 +504,14 @@ tape('should use client passed in via uri', function(assert) {
     });
 });
 
+tape('_prepareURL', function(assert) {
+    assert.equal(s3._prepareURL('http://dummy-bucket.s3.amazonaws.com/test/{z}/{x}/{y}.png', 1, 2, 3), 'http://dummy-bucket.s3.amazonaws.com/test/1/2/3.png');
+    assert.equal(s3._prepareURL('http://dummy-bucket.s3.amazonaws.com/{prefix}/test/{z}/{x}/{y}.png', 1, 164, 250), 'http://dummy-bucket.s3.amazonaws.com/4a/test/1/164/250.png');
+    assert.equal(s3._prepareURL('http://dummy-bucket.s3.amazonaws.com/{murmur4}/test/{z}/{x}/{y}.png', 1, 164, 250), 'http://dummy-bucket.s3.amazonaws.com/4c83/test/1/164/250.png');
+    assert.equal(s3._prepareURL('http://dummy-bucket.s3.amazonaws.com/{murmur4}/test/{z}/{x}/{y}.png', 1, 15, 10), 'http://dummy-bucket.s3.amazonaws.com/5794/test/1/15/10.png', 'prefix for tile coordinates > 16 is padded');
+    assert.end();
+});
+
 tape('cleanup', function(assert) {
     ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN'].forEach(function(k) {
         process.env[k] = orig[k];
