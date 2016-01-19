@@ -106,7 +106,6 @@ var mock = http.createServer(function (req, res) {
 
 function test(msg, assertions) {
     tape(msg, function(assert) {
-        S3.agent = http.globalAgent;
         AWS.config.update({
             endpoint: new AWS.Endpoint('http://localhost:20009'),
             s3BucketEndpoint: true
@@ -133,14 +132,21 @@ test('getTile retry timeout', function(assert) {
     new S3({
         data: {
             tiles: [ 'http://dummy-bucket.s3.amazonaws.com/slowget/{z}/{x}/{y}.png' ]
-        }
+        },
+        client: new AWS.S3({
+            maxRetries: 4,
+            httpOptions: {
+                timeout: 5000,
+                agent: http.globalAgent
+            }
+        })
     }, function(err, source) {
         assert.ifError(err);
 
         source.startWriting(function(err) {
             if (err) return done(err);
             source.getTile(3, 6, 5, function(err) {
-                assert.equal(err.message, 'Timed out after 5000ms', 'expected message');
+                assert.equal(err.message, 'Timed out after 2000ms', 'expected message');
                 assert.equal(err.statusCode, 504, 'expected statusCode');
                 assert.equal(attempts, 5, 'retried 4 times');
                 assert.end();
@@ -153,7 +159,14 @@ test('putTile success on GET timeout', function(assert) {
     new S3({
         data: {
             tiles: [ 'http://dummy-bucket.s3.amazonaws.com/slowget/{z}/{x}/{y}.png' ]
-        }
+        },
+        client: new AWS.S3({
+            maxRetries: 4,
+            httpOptions: {
+                timeout: 5000,
+                agent: http.globalAgent
+            }
+        })
     }, function(err, source) {
         assert.ifError(err);
 
@@ -172,14 +185,21 @@ test('putTile retry on PUT timeout', function(assert) {
     new S3({
         data: {
             tiles: [ 'http://dummy-bucket.s3.amazonaws.com/slowput/{z}/{x}/{y}.png' ]
-        }
+        },
+        client: new AWS.S3({
+            maxRetries: 4,
+            httpOptions: {
+                timeout: 5000,
+                agent: http.globalAgent
+            }
+        })
     }, function(err, source) {
         assert.ifError(err);
 
         source.startWriting(function(err) {
             if (err) return done(err);
             source.putTile(3, 6, 5, png, function(err) {
-                assert.equal(err.message, 'Timed out after 5000ms', 'expected message');
+                assert.equal(err.message, 'Timed out after 2000ms', 'expected message');
                 assert.equal(err.statusCode, 504, 'expected statusCode');
                 assert.equal(attempts, 6, '1 GET and retried PUT 4 times');
                 assert.end();
@@ -192,7 +212,14 @@ test('getTile do not retry missing', function(assert) {
     new S3({
         data: {
             tiles: [ 'http://dummy-bucket.s3.amazonaws.com/missingget/{z}/{x}/{y}.png' ]
-        }
+        },
+        client: new AWS.S3({
+            maxRetries: 4,
+            httpOptions: {
+                timeout: 5000,
+                agent: http.globalAgent
+            }
+        })
     }, function(err, source) {
         assert.ifError(err);
 
@@ -211,7 +238,14 @@ test('putTile do not retry GET missing', function(assert) {
     new S3({
         data: {
             tiles: [ 'http://dummy-bucket.s3.amazonaws.com/missingget/{z}/{x}/{y}.png' ]
-        }
+        },
+        client: new AWS.S3({
+            maxRetries: 4,
+            httpOptions: {
+                timeout: 5000,
+                agent: http.globalAgent
+            }
+        })
     }, function(err, source) {
         assert.ifError(err);
 
@@ -230,7 +264,14 @@ test('getTile retry hangups', function(assert) {
     new S3({
         data: {
             tiles: [ 'http://dummy-bucket.s3.amazonaws.com/hangupget/{z}/{x}/{y}.png' ]
-        }
+        },
+        client: new AWS.S3({
+            maxRetries: 4,
+            httpOptions: {
+                timeout: 5000,
+                agent: http.globalAgent
+            }
+        })
     }, function(err, source) {
         assert.ifError(err);
 
@@ -250,7 +291,14 @@ test('putTile retry on GET hangup', function(assert) {
     new S3({
         data: {
             tiles: [ 'http://dummy-bucket.s3.amazonaws.com/hangupget/{z}/{x}/{y}.png' ]
-        }
+        },
+        client: new AWS.S3({
+            maxRetries: 4,
+            httpOptions: {
+                timeout: 5000,
+                agent: http.globalAgent
+            }
+        })
     }, function(err, source) {
         assert.ifError(err);
 
@@ -269,7 +317,14 @@ test('putTile retry on PUT hangup', function(assert) {
     new S3({
         data: {
             tiles: [ 'http://dummy-bucket.s3.amazonaws.com/hangupput/{z}/{x}/{y}.png' ]
-        }
+        },
+        client: new AWS.S3({
+            maxRetries: 4,
+            httpOptions: {
+                timeout: 5000,
+                agent: http.globalAgent
+            }
+        })
     }, function(err, source) {
         assert.ifError(err);
 
@@ -289,7 +344,14 @@ test('getTile do not retry unmanaged http error', function(assert) {
     new S3({
         data: {
             tiles: [ 'http://dummy-bucket.s3.amazonaws.com/invalidget/{z}/{x}/{y}.png' ]
-        }
+        },
+        client: new AWS.S3({
+            maxRetries: 4,
+            httpOptions: {
+                timeout: 5000,
+                agent: http.globalAgent
+            }
+        })
     }, function(err, source) {
         assert.ifError(err);
 
@@ -308,7 +370,14 @@ test('putTile ignores GET unmanaged http error', function(assert) {
     new S3({
         data: {
             tiles: [ 'http://dummy-bucket.s3.amazonaws.com/invalidget/{z}/{x}/{y}.png' ]
-        }
+        },
+        client: new AWS.S3({
+            maxRetries: 4,
+            httpOptions: {
+                timeout: 5000,
+                agent: http.globalAgent
+            }
+        })
     }, function(err, source) {
         assert.ifError(err);
 
@@ -327,7 +396,14 @@ test('putTile fails on PUT unmanaged http error', function(assert) {
     new S3({
         data: {
             tiles: [ 'http://dummy-bucket.s3.amazonaws.com/invalidput/{z}/{x}/{y}.png' ]
-        }
+        },
+        client: new AWS.S3({
+            maxRetries: 4,
+            httpOptions: {
+                timeout: 5000,
+                agent: http.globalAgent
+            }
+        })
     }, function(err, source) {
         assert.ifError(err);
 
@@ -347,7 +423,14 @@ test('getTile retry internal error', function(assert) {
     new S3({
         data: {
             tiles: [ 'http://dummy-bucket.s3.amazonaws.com/internalget/{z}/{x}/{y}.png' ]
-        }
+        },
+        client: new AWS.S3({
+            maxRetries: 4,
+            httpOptions: {
+                timeout: 5000,
+                agent: http.globalAgent
+            }
+        })
     }, function(err, source) {
         assert.ifError(err);
 
@@ -367,7 +450,14 @@ test('putTile ignores GET internal error', function(assert) {
     new S3({
         data: {
             tiles: [ 'http://dummy-bucket.s3.amazonaws.com/internalget/{z}/{x}/{y}.png' ]
-        }
+        },
+        client: new AWS.S3({
+            maxRetries: 4,
+            httpOptions: {
+                timeout: 5000,
+                agent: http.globalAgent
+            }
+        })
     }, function(err, source) {
         assert.ifError(err);
 
@@ -386,7 +476,14 @@ test('putTile retry on PUT internal error', function(assert) {
     new S3({
         data: {
             tiles: [ 'http://dummy-bucket.s3.amazonaws.com/internalput/{z}/{x}/{y}.png' ]
-        }
+        },
+        client: new AWS.S3({
+            maxRetries: 4,
+            httpOptions: {
+                timeout: 5000,
+                agent: http.globalAgent
+            }
+        })
     }, function(err, source) {
         assert.ifError(err);
 
@@ -406,7 +503,14 @@ test('putTile no retry on PUT http error (no body)', function(assert) {
     new S3({
         data: {
             tiles: [ 'http://dummy-bucket.s3.amazonaws.com/nobodyput/{z}/{x}/{y}.png' ]
-        }
+        },
+        client: new AWS.S3({
+            maxRetries: 4,
+            httpOptions: {
+                timeout: 5000,
+                agent: http.globalAgent
+            }
+        })
     }, function(err, source) {
         assert.ifError(err);
         source.startWriting(function(err) {
@@ -425,7 +529,14 @@ test('getTile error with no body', function(assert) {
     new S3({
         data: {
             tiles: [ 'http://dummy-bucket.s3.amazonaws.com/nobodyget/{z}/{x}/{y}.png' ]
-        }
+        },
+        client: new AWS.S3({
+            maxRetries: 4,
+            httpOptions: {
+                timeout: 5000,
+                agent: http.globalAgent
+            }
+        })
     }, function(err, source) {
         assert.ifError(err);
 
@@ -445,7 +556,14 @@ test('getTile retry on content-length mismatch', function(assert) {
     new S3({
         data: {
             tiles: [ 'http://dummy-bucket.s3.amazonaws.com/lengthget/{z}/{x}/{y}.png' ]
-        }
+        },
+        client: new AWS.S3({
+            maxRetries: 4,
+            httpOptions: {
+                timeout: 5000,
+                agent: http.globalAgent
+            }
+        })
     }, function(err, source) {
         assert.ifError(err);
 
