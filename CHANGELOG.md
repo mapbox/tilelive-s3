@@ -1,3 +1,7 @@
+## 6.1.0
+
+- Add support for `{prefix4}` hex prefix scheme.
+
 ## 6.0.0
 
 - Move the S3 client up into global scope
