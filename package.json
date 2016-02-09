@@ -9,10 +9,12 @@
   },
   "devDependencies": {
     "hat": "0.0.3",
-    "tape": "^4.2.2"
+    "tape": "^4.2.2",
+    "eslint": "~1.00.0",
+    "eslint-config-unstyled": "^1.1.0"
   },
   "main": "./lib/index.js",
   "scripts": {
-    "test": "tape test/index.js"
+    "test": "eslint lib && tape test/index.js"
   }
 }
