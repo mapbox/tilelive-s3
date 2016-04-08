@@ -1,6 +1,10 @@
+## 6.2.0
+
+- Adds support for an environment variable `AWS_S3_ENDPOINT` which can be useful in testing scenarios
+
 ## 6.1.0
 
-- Add support for `{prefix4}` hex prefix scheme.
+- Add support for `{prefix4}` hex prefix scheme
 
 ## 6.0.0
 
