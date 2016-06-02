@@ -82,6 +82,10 @@ tape('reads from uri.query', function(assert) {
         assert.equal(source.acl, 'public-read', 'sets source.acl = public-read');
         assert.equal(source.sse, 'aws:kms', 'sets source.sse = aws:kms');
     });
+    new S3(url.parse('s3://mapbox/tilelive-s3/test/{z}/{x}/{y}.png?timeout=50000', true), function(err, source) {
+        assert.ifError(err, 'success');
+        assert.equal(source.client.config.httpOptions.timeout, 50000, 'sets source.timeout = 50000');
+    });
     assert.end();
 });
 

@@ -146,7 +146,7 @@ test('getTile retry timeout', function(assert) {
         source.startWriting(function(err) {
             if (err) return done(err);
             source.getTile(3, 6, 5, function(err) {
-                assert.equal(err.message, 'Timed out after 2000ms', 'expected message');
+                assert.ok(/Connection timed out after [0-9]+ms/.test(err.message), 'expected message');
                 assert.equal(err.statusCode, 504, 'expected statusCode');
                 assert.equal(attempts, 5, 'retried 4 times');
                 assert.end();
@@ -199,7 +199,7 @@ test('putTile retry on PUT timeout', function(assert) {
         source.startWriting(function(err) {
             if (err) return done(err);
             source.putTile(3, 6, 5, png, function(err) {
-                assert.equal(err.message, 'Timed out after 2000ms', 'expected message');
+                assert.ok(/Connection timed out after [0-9]+ms/.test(err.message), 'expected message');
                 assert.equal(err.statusCode, 504, 'expected statusCode');
                 assert.equal(attempts, 6, '1 GET and retried PUT 4 times');
                 assert.end();
