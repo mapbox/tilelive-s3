@@ -71,16 +71,18 @@ tape('marks source as open', function(assert) {
 });
 
 tape('reads from uri.query', function(assert) {
-    new S3(url.parse('s3://mapbox/tilelive-s3/test/{z}/{x}/{y}.png?acl=public-read&sse=aws:kms&sseKmsId=foo', true), function(err, source) {
+    new S3(url.parse('s3://mapbox/tilelive-s3/test/{z}/{x}/{y}.png?acl=public-read&sse=aws:kms&sseKmsId=foo&timeout=50000', true), function(err, source) {
         assert.ifError(err, 'success');
         assert.equal(source.acl, 'public-read', 'sets source.acl = public-read');
         assert.equal(source.sse, 'aws:kms', 'sets source.sse = aws:kms');
+        assert.equal(source.client.config.httpOptions.timeout, '50000', 'sets source.timeout = 50000');
         assert.equal(source.sseKmsId, 'foo', 'sets source.sseKmsId = foo');
     });
-    new S3(url.parse('s3://mapbox/tilelive-s3/test/{z}/{x}/{y}.acl png?acl=public-read&sse=aws:kms'), function(err, source) {
+    new S3(url.parse('s3://mapbox/tilelive-s3/test/{z}/{x}/{y}.acl png?acl=public-read&sse=aws:kms&timeout=50000'), function(err, source) {
         assert.ifError(err, 'success');
         assert.equal(source.acl, 'public-read', 'sets source.acl = public-read');
         assert.equal(source.sse, 'aws:kms', 'sets source.sse = aws:kms');
+        assert.equal(source.client.config.httpOptions.timeout, '50000', 'sets source.timeout = 50000');
     });
     assert.end();
 });
