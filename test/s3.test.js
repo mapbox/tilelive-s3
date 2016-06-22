@@ -721,3 +721,15 @@ tape('expires cleanup', function(assert) {
 
 })();
 
+tape('accepts region', function(assert) {
+    assert.plan(2);
+    var S3client = AWS.S3;
+    AWS.S3 = function(params) {
+        assert.equal(params.region, 'eu-central-1', 'S3 client with proper region');
+    }
+
+    new S3('s3://mapbox/tilelive-s3?region=eu-central-1', function(err) {
+        assert.ifError(err, 'successfully created client');
+        AWS.S3 = S3client;
+    });
+});
