@@ -1,3 +1,7 @@
+## 6.4.0
+
+- Allow caller to set the appropriate S3 region for the destination bucket via `region` query param
+
 ## 6.3.0
 
 - Allow override of default S3 timeout via `timeout` query param
