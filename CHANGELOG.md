@@ -1,3 +1,7 @@
+## 6.4.1
+
+- Allows caller to set a region when providing a pre-parsed uri object
+
 ## 6.4.0
 
 - Allow caller to set the appropriate S3 region for the destination bucket via `region` query param
