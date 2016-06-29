@@ -1,3 +1,8 @@
+## 6.4.2
+
+- Allows caller to set a region when providing tile URLs via a tilejson object
+- Upgrades s3urls to support buckets in cn-north-1
+
 ## 6.4.1
 
 - Allows caller to set a region when providing a pre-parsed uri object
