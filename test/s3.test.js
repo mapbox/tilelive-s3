@@ -760,6 +760,16 @@ tape('accepts region in pre-parsed uri (not qs.parsed)', function(assert) {
     });
 });
 
+tape('accepts cn-north-1 region', function(assert) {
+    assert.plan(3);
+
+    new S3(url.parse('s3://mapbox/tilelive-s3?region=cn-north-1', true), function(err, source) {
+        assert.ifError(err, 'successfully created client');
+        assert.equal(source._uri.host, 's3.cn-north-1.amazonaws.com.cn');
+        assert.equal(source._uri.hostname, 's3.cn-north-1.amazonaws.com.cn');
+    });
+});
+
 tape('accepts region in tilejson', function(assert) {
     assert.plan(2);
     var S3client = AWS.S3;
