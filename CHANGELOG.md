@@ -1,3 +1,7 @@
+## 6.4.3
+
+- Adds S3 endpoint for cn-north-1 query region
+
 ## 6.4.2
 
 - Allows caller to set a region when providing tile URLs via a tilejson object
