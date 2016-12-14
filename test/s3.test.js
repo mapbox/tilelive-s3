@@ -803,7 +803,8 @@ tape('strict mode', function(t) {
             return reqObj;
         }
         new S3({
-            data: { tiles: ['http://mapbox.s3.amazonaws.com/tilelive-s3/test/{z}/{x}/{y}.png'], minzoom: 1, maxzoom: 3, strict: true }
+            data: { tiles: ['http://mapbox.s3.amazonaws.com/tilelive-s3/test/{z}/{x}/{y}.png'], minzoom: 1, maxzoom: 3 },
+            strict: true
         }, function(err, source) {
             assert.ifError(err);
             s3 = source;
