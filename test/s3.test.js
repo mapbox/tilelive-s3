@@ -782,3 +782,69 @@ tape('accepts region in tilejson', function(assert) {
         AWS.S3 = S3client;
     });
 });
+
+tape('strict mode', function(t) {
+    var S3client = AWS.S3;
+    var s3;
+    var io = true;
+
+    t.test('setup', function(assert) {
+        AWS.S3 = function(params) {}
+        AWS.S3.prototype.getObject = function(params, callback) {
+            if (io) {
+              assert.deepEqual(params, { Bucket: 'mapbox', Key: 'tilelive-s3/test/2/2/2.png' });
+              callback(null, { Body: {} });
+            } else {
+              assert.ok(io);
+            }
+            var reqObj = {
+              on: function() { return reqObj; }
+            }
+            return reqObj;
+        }
+        new S3({
+            data: { tiles: ['http://mapbox.s3.amazonaws.com/tilelive-s3/test/{z}/{x}/{y}.png'], minzoom: 1, maxzoom: 3 },
+            strict: true
+        }, function(err, source) {
+            assert.ifError(err);
+            s3 = source;
+            assert.end();
+        });
+    });
+
+    t.test('getTile - within min/max zoom', function(assert) {
+        io = true;
+        s3.getTile(2, 2, 2, function(err, tile, headers) {
+            assert.ifError(err);
+            assert.ok(tile);
+            assert.end();
+        });
+    });
+
+    t.test('getTile - below min zoom', function(assert) {
+        io = false;
+        s3.getTile(0, 0, 0, function(err, tile, headers) {
+            assert.ok(err);
+            assert.equal(err.message, 'Tile does not exist');
+            assert.notOk(tile);
+            assert.end();
+        });
+    });
+
+    t.test('getTile - above max zoom', function(assert) {
+        io = false;
+        s3.getTile(5, 5, 5, function(err, tile, headers) {
+            assert.ok(err);
+            assert.equal(err.message, 'Tile does not exist');
+            assert.notOk(tile);
+            assert.end();
+        });
+    });
+
+    t.test('cleanup', function(assert) {
+        AWS.S3 = S3client;
+        assert.end();
+    });
+
+    t.end();
+});
