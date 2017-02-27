@@ -1,5 +1,5 @@
 {
-  "name": "tilelive-s3",
+  "name": "@mapbox/tilelive-s3",
   "version": "6.5.0",
   "dependencies": {
     "agentkeepalive": "^2.0.3",
