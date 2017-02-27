@@ -1,3 +1,8 @@
+## 6.5.0
+
+- Optional `strict` property will short-circuit requests to S3 if a tile is below a minzoom or above a maxzoom. This cuts down on actually doing it for requests that are known 404s. [#89](https://github.com/mapbox/tilelive-s3/pull/89)
+- move to @mapbox/tilelive-s3 namespace
+
 ## 6.4.3
 
 - Adds S3 endpoint for cn-north-1 query region
