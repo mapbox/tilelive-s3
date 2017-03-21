@@ -3,7 +3,7 @@
   "version": "6.5.0",
   "dependencies": {
     "agentkeepalive": "^2.0.3",
-    "aws-sdk": "^2.2.19",
+    "aws-sdk": "^2.6.0",
     "s3urls": "^1.4.0",
     "@mapbox/tiletype": "^0.3.0"
   },
