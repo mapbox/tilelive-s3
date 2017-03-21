@@ -1,3 +1,7 @@
+## 6.5.1
+
+- Update aws-sdk to use >=2.6.0 [#92](https://github.com/mapbox/tilelive-s3/pull/92)
+
 ## 6.5.0
 
 - Optional `strict` property will short-circuit requests to S3 if a tile is below a minzoom or above a maxzoom. This cuts down on actually doing it for requests that are known 404s. [#89](https://github.com/mapbox/tilelive-s3/pull/89)

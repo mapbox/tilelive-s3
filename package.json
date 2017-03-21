@@ -1,6 +1,6 @@
 {
   "name": "@mapbox/tilelive-s3",
-  "version": "6.5.0",
+  "version": "6.5.1",
   "dependencies": {
     "agentkeepalive": "^2.0.3",
     "aws-sdk": "^2.6.0",
