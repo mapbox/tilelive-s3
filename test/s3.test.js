@@ -283,7 +283,7 @@ tape('puts a PNG tile', function(assert) {
         }, function(err, res) {
             assert.ifError(err);
             assert.equal(res.ContentType, 'image/png');
-            assert.equal(res.ContentLength, '827');
+            assert.equal(res.ContentLength, 827);
             assert.equal(res.ServerSideEncryption, 'AES256');
             acl();
         });
@@ -402,7 +402,7 @@ tape('puts a PBF tile', function(assert) {
             }, function(err, res) {
                 assert.ifError(err);
                 assert.equal(res.ContentType, 'application/x-protobuf');
-                assert.equal(res.ContentLength, '40115');
+                assert.equal(res.ContentLength, 40115);
                 assert.equal(res.ContentEncoding, 'gzip');
                 awss3.getObjectAcl({
                     Bucket: 'mapbox',
