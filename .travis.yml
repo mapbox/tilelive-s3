@@ -2,6 +2,11 @@ language: node_js
 
 sudo: false
 
+node_js:
+  - "0.10"
+  - "4"
+  - "6"
+
 env:
   global:
    - secure: SNKAav+ZYneBNqdXu5qpwQXmLgyrjD4ACxHmgn78o6+L1jLpfHX6VhCrPhDOEnG5wqz0rZBPsW2sBuhlDe56WKFqeGEfXo792XeZr/dbO8F5x4BqIeSEkH1C9yE0HdMtXZ6Ox2Oaf3vsyp+s3dtJkgtkkCqbNEDBsDVm7OY0QU8=
