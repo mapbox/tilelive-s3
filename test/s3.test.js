@@ -333,6 +333,7 @@ tape('puts a PNG tile (noop)', function(assert) {
     var noop = s3._stats.noop;
     var txin = s3._stats.txin;
     var txout = s3._stats.txout;
+
     s3.putTile(3, 6, 5, png, function(err) {
         assert.ifError(err);
         assert.equal(s3._stats.get - get, 1, 'stats: +1 get');
@@ -782,6 +783,66 @@ tape('accepts region in tilejson', function(assert) {
         AWS.S3 = S3client;
     });
 });
+
+
+tape('setup', function(assert) {
+    awss3.deleteObject({
+        Bucket: 'mapbox',
+        Key: 'tilelive-s3/test-put/' + tmpid + '/3/6/5.png'
+    }, assert.end);
+});
+
+tape('setup', function(assert) {
+    new S3('s3://mapbox/tilelive-s3/test-put/' + tmpid + '/{z}/{x}/{y}.png?acl=public-read&sse=AES256&events=true', function(err, source) {
+        assert.ifError(err);
+        s3 = source;
+        assert.end();
+    });
+});
+
+tape('put events', function(assert) {
+    var png = fs.readFileSync(fixtures + '/tile.png');
+    var put = s3._stats.put;
+    var noop = s3._stats.noop;
+    assert.plan(7)
+
+    s3.on('putTile', function (z, x, y, size) {
+        assert.equal(z, 3, 'expected Z');
+        assert.equal(x, 6, 'expected X');
+        assert.equal(y, 5, 'expected Y');
+        assert.equal(size, 827, 'expected tile size');
+    });
+
+    s3.putTile(3, 6, 5, png, function (err) {
+        s3.removeAllListeners('putTile');
+        assert.ifError(err);
+        assert.equal(s3._stats.put - put, 1, 'stats +1 put');
+        assert.equal(s3._stats.noop - noop, 0, 'stats +0 noop');
+    });
+});
+
+tape('put events (noop)', function(assert) {
+    var png = fs.readFileSync(fixtures + '/tile.png');
+    var put = s3._stats.put;
+    var noop = s3._stats.noop;
+
+    assert.plan(7)
+
+    s3.on('putTile', function (z, x, y, size) {
+        assert.equal(z, 3, 'expected Z');
+        assert.equal(x, 6, 'expected X');
+        assert.equal(y, 5, 'expected Y');
+        assert.equal(size, 827, 'expected tile size');
+    });
+
+    s3.putTile(3, 6, 5, png, function (err) {
+        s3.removeAllListeners('putTile');
+        assert.ifError(err);
+        assert.equal(s3._stats.put - put, 0, 'stats +0 put');
+        assert.equal(s3._stats.noop - noop, 1, 'stats +1 noop');
+    });
+});
+
 
 tape('strict mode', function(t) {
     var S3client = AWS.S3;
