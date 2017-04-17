@@ -1,6 +1,6 @@
 {
   "name": "@mapbox/tilelive-s3",
-  "version": "6.5.1",
+  "version": "6.6.0",
   "dependencies": {
     "agentkeepalive": "^2.0.3",
     "aws-sdk": "^2.6.0",
@@ -15,8 +15,8 @@
   "scripts": {
     "test": "tape test/index.js"
   },
-  "repository" : {
-    "type" : "git",
-    "url" : "https://github.com/mapbox/tilelive-s3.git"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mapbox/tilelive-s3.git"
   }
 }
