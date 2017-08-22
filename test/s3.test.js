@@ -161,6 +161,14 @@ tape('setup source ignores invalid expires', function(assert) {
     });
 });
 
+tape('setup source with querystring cache-control', function(assert) {
+    new S3('s3://mapbox/tilelive-s3/test/{z}/{x}/{y}.png?cacheControl=must-revalidate', function(err, source) {
+        assert.ifError(err, 'success');
+        assert.equal(source.cacheControl, 'must-revalidate');
+        assert.end();
+    });
+});
+
 tape('should return a blank tile', function(assert) {
     s3.getTile(4, 12, 10, function(err) {
         assert.ok(err);
@@ -717,6 +725,42 @@ tape('expires cleanup', function(assert) {
     awss3.deleteObject({
         Bucket: 'mapbox',
         Key: 'tilelive-s3/test/expires/0/0/0.png'
+    }, assert.end);
+});
+
+})();
+
+(function() {
+
+tape('cache-control PUT', function(assert) {
+    new S3('s3://mapbox/tilelive-s3/test/cache-control/{z}/{x}/{y}.png?cacheControl=must-revalidate', function(err, source) {
+        assert.ifError(err);
+        source.startWriting(function(err) {
+            assert.ifError(err);
+            source.putTile(0, 0, 0, fs.readFileSync(fixtures + '/tile.png'), function(err) {
+                assert.ifError(err);
+                assert.end();
+            });
+        });
+    });
+});
+
+tape('cache-control GET', function(assert) {
+    new S3('s3://mapbox/tilelive-s3/test/cache-control/{z}/{x}/{y}.png', function(err, source) {
+        assert.ifError(err);
+        source.getTile(0, 0, 0, function(err, data, headers) {
+            assert.ifError(err);
+            assert.equal(data.length, 827, 'gets tile data');
+            assert.equal(headers['Cache-Control'], 'must-revalidate', 'has cache-control header');
+            assert.end();
+        });
+    });
+});
+
+tape('cache-control cleanup', function(assert) {
+    awss3.deleteObject({
+        Bucket: 'mapbox',
+        Key: 'tilelive-s3/test/cache-control/0/0/0.png'
     }, assert.end);
 });
 
