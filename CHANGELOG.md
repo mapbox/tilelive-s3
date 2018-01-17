@@ -1,3 +1,11 @@
+## 6.7.0
+
+- Allows setting Cache-Control headers via the `cacheControl` property
+
+## 6.6.0
+
+- Enables `putTile` events if `events=true` is set [#93](https://github.com/mapbox/tilelive-s3/pull/93)
+
 ## 6.5.1
 
 - Update aws-sdk to use >=2.6.0 [#92](https://github.com/mapbox/tilelive-s3/pull/92)
