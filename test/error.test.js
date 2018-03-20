@@ -437,7 +437,7 @@ test('getTile retry internal error', function(assert) {
         source.startWriting(function(err) {
             if (err) return done(err);
             source.getTile(3, 6, 5, function(err) {
-                assert.equal(err.message, '[x-amz-id-2:01234567] [x-amz-request-id:0000000000000000] unknown error', 'expected message');
+                assert.equal(err.message, 'unknown error', 'expected message');
                 assert.equal(err.statusCode, 500, 'expected statusCode');
                 assert.equal(attempts, 5, 'retried 4 times');
                 assert.end();
@@ -490,7 +490,7 @@ test('putTile retry on PUT internal error', function(assert) {
         source.startWriting(function(err) {
             if (err) return done(err);
             source.putTile(3, 6, 5, png, function(err) {
-                assert.equal(err.message, '[x-amz-id-2:01234567] [x-amz-request-id:0000000000000000] unknown error', 'expected message');
+                assert.equal(err.message, 'unknown error', 'expected message');
                 assert.equal(err.statusCode, 500, 'expected statusCode');
                 assert.equal(attempts, 6, 'retried PUT 4 times');
                 assert.end();
@@ -516,7 +516,7 @@ test('putTile no retry on PUT http error (no body)', function(assert) {
         source.startWriting(function(err) {
             if (err) return done(err);
             source.putTile(3, 6, 5, png, function(err) {
-                assert.equal(err.message, '[x-amz-id-2:01234567] [x-amz-request-id:0000000000000000] 503 Unknown');
+                assert.equal(err.message, '503 Unknown');
                 assert.equal(err.statusCode, 503, 'expected statusCode');
                 assert.equal(attempts, 6, 'retried PUT 4 times');
                 assert.end();
@@ -543,7 +543,7 @@ test('getTile error with no body', function(assert) {
         source.startWriting(function(err) {
             if (err) return done(err);
             source.getTile(3, 6, 5, function(err) {
-                assert.equal(err.message, '[x-amz-id-2:01234567] [x-amz-request-id:0000000000000000] 503 Unknown', 'expected message');
+                assert.equal(err.message, '503 Unknown', 'expected message');
                 assert.equal(err.statusCode, 503, 'expected statusCode');
                 assert.equal(attempts, 5, 'retried 4 times');
                 assert.end();
@@ -571,7 +571,7 @@ test('getTile retry on content-length mismatch', function(assert) {
             if (err) return done(err);
             source.getTile(3, 6, 5, function(err) {
                 assert.equal(err.code, 'TruncatedResponseError', 'expected error code');
-                assert.equal(err.message, '[x-amz-id-2:01234567] [x-amz-request-id:0000000000000000] Content-Length does not match response body length', 'expected message');
+                assert.equal(err.message, 'Content-Length does not match response body length', 'expected message');
                 assert.equal(err.statusCode, 500, 'expected statusCode');
                 assert.equal(attempts, 5, 'retried 4 times');
                 assert.end();
