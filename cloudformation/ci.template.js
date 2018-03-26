@@ -6,7 +6,7 @@ module.exports = {
   'AWSTemplateFormatVersion': '2010-09-09',
   'Description': 'tilelive-s3 build resources',
   'Resources': {
-    'BuildUser': {
+    'TravisUser': {
       'Type': 'AWS::IAM::User',
       'Properties': {
         'Policies': [
@@ -70,19 +70,19 @@ module.exports = {
         ]
       }
     },
-    'BuildUserKey': {
+    'TravisUserKey': {
       'Type': 'AWS::IAM::AccessKey',
       'Properties': {
-        'UserName': cf.ref('BuildUser')
+        'UserName': cf.ref('TravisUser')
       }
     }
   },
   'Outputs': {
     'AccessKeyId': {
-      'Value': cf.ref('BuildUserKey')
+      'Value': cf.ref('TravisUserKey')
     },
     'SecretAccessKey': {
-      'Value': cf.getAtt('BuildUserKey', 'SecretAccessKey')
+      'Value': cf.getAtt('TravisUserKey', 'SecretAccessKey')
     }
   }
 };
