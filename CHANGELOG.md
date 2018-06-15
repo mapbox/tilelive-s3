@@ -1,3 +1,11 @@
+## 7.0.1
+
+- Fix bug where global AWS config value for `s3ForcePathStyle` would not be respected
+
+## 7.0.0
+
+- Drop support for node 0.10 & 4
+
 ## 6.7.0
 
 - Allows setting Cache-Control headers via the `cacheControl` property
