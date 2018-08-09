@@ -5,7 +5,8 @@
     "agentkeepalive": "^2.0.3",
     "aws-sdk": "^2.2.19",
     "s3urls": "^1.4.0",
-    "tiletype": "^0.3.0"
+    "tiletype": "^0.3.0",
+    "tunnel": "0.0.5"
   },
   "devDependencies": {
     "hat": "0.0.3",
