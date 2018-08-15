@@ -4,7 +4,7 @@
   "dependencies": {
     "agentkeepalive": "^2.0.3",
     "aws-sdk": "^2.2.19",
-    "tunnel": "0.0.5",
+    "tunnel-agent": "^0.6.0",
     "s3urls": "^1.4.0",
     "tiletype": "^0.3.0"
   },
