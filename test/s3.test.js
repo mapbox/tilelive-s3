@@ -161,6 +161,14 @@ tape('setup source ignores invalid expires', function(assert) {
     });
 });
 
+tape('setup source with querystring cache-control', function(assert) {
+    new S3('s3://mapbox/tilelive-s3/test/{z}/{x}/{y}.png?cacheControl=must-revalidate', function(err, source) {
+        assert.ifError(err, 'success');
+        assert.equal(source.cacheControl, 'must-revalidate');
+        assert.end();
+    });
+});
+
 tape('should return a blank tile', function(assert) {
     s3.getTile(4, 12, 10, function(err) {
         assert.ok(err);
@@ -283,7 +291,7 @@ tape('puts a PNG tile', function(assert) {
         }, function(err, res) {
             assert.ifError(err);
             assert.equal(res.ContentType, 'image/png');
-            assert.equal(res.ContentLength, '827');
+            assert.equal(res.ContentLength, 827);
             assert.equal(res.ServerSideEncryption, 'AES256');
             acl();
         });
@@ -333,6 +341,7 @@ tape('puts a PNG tile (noop)', function(assert) {
     var noop = s3._stats.noop;
     var txin = s3._stats.txin;
     var txout = s3._stats.txout;
+
     s3.putTile(3, 6, 5, png, function(err) {
         assert.ifError(err);
         assert.equal(s3._stats.get - get, 1, 'stats: +1 get');
@@ -402,7 +411,7 @@ tape('puts a PBF tile', function(assert) {
             }, function(err, res) {
                 assert.ifError(err);
                 assert.equal(res.ContentType, 'application/x-protobuf');
-                assert.equal(res.ContentLength, '40115');
+                assert.equal(res.ContentLength, 40115);
                 assert.equal(res.ContentEncoding, 'gzip');
                 awss3.getObjectAcl({
                     Bucket: 'mapbox',
@@ -721,6 +730,42 @@ tape('expires cleanup', function(assert) {
 
 })();
 
+(function() {
+
+tape('cache-control PUT', function(assert) {
+    new S3('s3://mapbox/tilelive-s3/test/cache-control/{z}/{x}/{y}.png?cacheControl=must-revalidate', function(err, source) {
+        assert.ifError(err);
+        source.startWriting(function(err) {
+            assert.ifError(err);
+            source.putTile(0, 0, 0, fs.readFileSync(fixtures + '/tile.png'), function(err) {
+                assert.ifError(err);
+                assert.end();
+            });
+        });
+    });
+});
+
+tape('cache-control GET', function(assert) {
+    new S3('s3://mapbox/tilelive-s3/test/cache-control/{z}/{x}/{y}.png', function(err, source) {
+        assert.ifError(err);
+        source.getTile(0, 0, 0, function(err, data, headers) {
+            assert.ifError(err);
+            assert.equal(data.length, 827, 'gets tile data');
+            assert.equal(headers['Cache-Control'], 'must-revalidate', 'has cache-control header');
+            assert.end();
+        });
+    });
+});
+
+tape('cache-control cleanup', function(assert) {
+    awss3.deleteObject({
+        Bucket: 'mapbox',
+        Key: 'tilelive-s3/test/cache-control/0/0/0.png'
+    }, assert.end);
+});
+
+})();
+
 tape('accepts region', function(assert) {
     assert.plan(2);
     var S3client = AWS.S3;
@@ -760,6 +805,16 @@ tape('accepts region in pre-parsed uri (not qs.parsed)', function(assert) {
     });
 });
 
+tape('accepts cn-north-1 region', function(assert) {
+    assert.plan(3);
+
+    new S3(url.parse('s3://mapbox/tilelive-s3?region=cn-north-1', true), function(err, source) {
+        assert.ifError(err, 'successfully created client');
+        assert.equal(source._uri.host, 's3.cn-north-1.amazonaws.com.cn');
+        assert.equal(source._uri.hostname, 's3.cn-north-1.amazonaws.com.cn');
+    });
+});
+
 tape('accepts region in tilejson', function(assert) {
     assert.plan(2);
     var S3client = AWS.S3;
@@ -771,4 +826,130 @@ tape('accepts region in tilejson', function(assert) {
         assert.ifError(err, 'successfully created client');
         AWS.S3 = S3client;
     });
+});
+
+
+tape('setup', function(assert) {
+    awss3.deleteObject({
+        Bucket: 'mapbox',
+        Key: 'tilelive-s3/test-put/' + tmpid + '/3/6/5.png'
+    }, assert.end);
+});
+
+tape('setup', function(assert) {
+    new S3('s3://mapbox/tilelive-s3/test-put/' + tmpid + '/{z}/{x}/{y}.png?acl=public-read&sse=AES256&events=true', function(err, source) {
+        assert.ifError(err);
+        s3 = source;
+        assert.end();
+    });
+});
+
+tape('put events', function(assert) {
+    var png = fs.readFileSync(fixtures + '/tile.png');
+    var put = s3._stats.put;
+    var noop = s3._stats.noop;
+    assert.plan(7)
+
+    s3.on('putTile', function (z, x, y, size) {
+        assert.equal(z, 3, 'expected Z');
+        assert.equal(x, 6, 'expected X');
+        assert.equal(y, 5, 'expected Y');
+        assert.equal(size, 827, 'expected tile size');
+    });
+
+    s3.putTile(3, 6, 5, png, function (err) {
+        s3.removeAllListeners('putTile');
+        assert.ifError(err);
+        assert.equal(s3._stats.put - put, 1, 'stats +1 put');
+        assert.equal(s3._stats.noop - noop, 0, 'stats +0 noop');
+    });
+});
+
+tape('put events (noop)', function(assert) {
+    var png = fs.readFileSync(fixtures + '/tile.png');
+    var put = s3._stats.put;
+    var noop = s3._stats.noop;
+
+    assert.plan(7)
+
+    s3.on('putTile', function (z, x, y, size) {
+        assert.equal(z, 3, 'expected Z');
+        assert.equal(x, 6, 'expected X');
+        assert.equal(y, 5, 'expected Y');
+        assert.equal(size, 827, 'expected tile size');
+    });
+
+    s3.putTile(3, 6, 5, png, function (err) {
+        s3.removeAllListeners('putTile');
+        assert.ifError(err);
+        assert.equal(s3._stats.put - put, 0, 'stats +0 put');
+        assert.equal(s3._stats.noop - noop, 1, 'stats +1 noop');
+    });
+});
+
+
+tape('strict mode', function(t) {
+    var S3client = AWS.S3;
+    var s3;
+    var io = true;
+
+    t.test('setup', function(assert) {
+        AWS.S3 = function(params) {}
+        AWS.S3.prototype.getObject = function(params, callback) {
+            if (io) {
+              assert.deepEqual(params, { Bucket: 'mapbox', Key: 'tilelive-s3/test/2/2/2.png' });
+              callback(null, { Body: {} });
+            } else {
+              assert.ok(io);
+            }
+            var reqObj = {
+              on: function() { return reqObj; }
+            }
+            return reqObj;
+        }
+        new S3({
+            data: { tiles: ['http://mapbox.s3.amazonaws.com/tilelive-s3/test/{z}/{x}/{y}.png'], minzoom: 1, maxzoom: 3 },
+            strict: true
+        }, function(err, source) {
+            assert.ifError(err);
+            s3 = source;
+            assert.end();
+        });
+    });
+
+    t.test('getTile - within min/max zoom', function(assert) {
+        io = true;
+        s3.getTile(2, 2, 2, function(err, tile, headers) {
+            assert.ifError(err);
+            assert.ok(tile);
+            assert.end();
+        });
+    });
+
+    t.test('getTile - below min zoom', function(assert) {
+        io = false;
+        s3.getTile(0, 0, 0, function(err, tile, headers) {
+            assert.ok(err);
+            assert.equal(err.message, 'Tile does not exist');
+            assert.notOk(tile);
+            assert.end();
+        });
+    });
+
+    t.test('getTile - above max zoom', function(assert) {
+        io = false;
+        s3.getTile(5, 5, 5, function(err, tile, headers) {
+            assert.ok(err);
+            assert.equal(err.message, 'Tile does not exist');
+            assert.notOk(tile);
+            assert.end();
+        });
+    });
+
+    t.test('cleanup', function(assert) {
+        AWS.S3 = S3client;
+        assert.end();
+    });
+
+    t.end();
 });
