@@ -4,3 +4,7 @@ sudo: false
 
 node_js:
   - "6"
+
+# uploads to: https://codecov.io/gh/mapbox/api-maps
+after_success:
+  - npm run upload-coverage
