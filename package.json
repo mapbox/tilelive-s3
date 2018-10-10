@@ -19,7 +19,7 @@
   "scripts": {
     "test": "tape test/index.js && nyc tape test/index.js",
     "coverage": "nyc report --reporter html && opener coverage/index.html",
-    "upload-coverage": "codecov -f .nyc_output/*.json"
+    "upload-coverage": "nyc report --reporter json && codecov -f ./coverage/coverage.json"
   },
   "repository": {
     "type": "git",
