@@ -16,7 +16,7 @@
   },
   "main": "./lib/index.js",
   "scripts": {
-    "test": "tape test/index.js && nyc tape test/index.js",
+    "test": "nyc tape test/*.test.js",
     "coverage": "nyc report --reporter html && opener coverage/index.html",
     "upload-coverage": "nyc report --reporter json && codecov -f ./coverage/coverage-final.json"
   },
