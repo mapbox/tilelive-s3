@@ -1,7 +1,7 @@
 {
     "name": "vector",
     "scheme": "xyz",
-    "tiles": [ "http://mapbox.s3.amazonaws.com/tilelive-s3/vector/{z}/{x}/{y}.vector.pbf" ],
+    "tiles": [ "https://mapbox.s3.amazonaws.com/tilelive-s3/vector/{z}/{x}/{y}.vector.pbf" ],
     "format": "pbf",
     "minzoom": 0,
     "maxzoom": 2,

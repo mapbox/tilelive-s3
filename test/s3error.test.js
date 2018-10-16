@@ -1,5 +1,5 @@
 var tape = require('tape');
-var S3 = require('..');
+var S3 = require('../lib');
 var http = require('http');
 var path = require('path');
 var fs = require('fs');
