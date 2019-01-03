@@ -393,7 +393,7 @@ tape('stopWriting (stats)', function(assert) {
     s3.stopWriting(function(err) {
         console.log = origlog;
         assert.ifError(err);
-        assert.equal(stdout.length, 14, 'reports stats');
+        assert.equal(stdout.length, 16, 'reports stats');
         delete process.env.TILELIVE_S3_STATS;
         assert.end();
     });
@@ -848,7 +848,8 @@ tape('put events', function(assert) {
     var png = fs.readFileSync(fixtures + '/tile.png');
     var put = s3._stats.put;
     var noop = s3._stats.noop;
-    assert.plan(7)
+    var blocked = s3._stats.blocked;
+    assert.plan(8)
 
     s3.on('putTile', function (z, x, y, size) {
         assert.equal(z, 3, 'expected Z');
@@ -862,6 +863,7 @@ tape('put events', function(assert) {
         assert.ifError(err);
         assert.equal(s3._stats.put - put, 1, 'stats +1 put');
         assert.equal(s3._stats.noop - noop, 0, 'stats +0 noop');
+        assert.equal(s3._stats.blocked - blocked, 0, 'stats +0 blocked');
     });
 });
 
@@ -869,8 +871,9 @@ tape('put events (noop)', function(assert) {
     var png = fs.readFileSync(fixtures + '/tile.png');
     var put = s3._stats.put;
     var noop = s3._stats.noop;
+    var blocked = s3._stats.blocked;
 
-    assert.plan(7)
+    assert.plan(8)
 
     s3.on('putTile', function (z, x, y, size) {
         assert.equal(z, 3, 'expected Z');
@@ -884,6 +887,31 @@ tape('put events (noop)', function(assert) {
         assert.ifError(err);
         assert.equal(s3._stats.put - put, 0, 'stats +0 put');
         assert.equal(s3._stats.noop - noop, 1, 'stats +1 noop');
+        assert.equal(s3._stats.blocked - blocked, 0, 'stats +0 blocked');
+    });
+});
+
+tape('put events (blocked)', function(assert) {
+    var png = fs.readFileSync(fixtures + '/small-tile.png');
+    var put = s3._stats.put;
+    var noop = s3._stats.noop;
+    var blocked = s3._stats.blocked;
+
+    assert.plan(8)
+
+    s3.on('putTile', function (z, x, y, size) {
+        assert.equal(z, 3, 'expected Z');
+        assert.equal(x, 6, 'expected X');
+        assert.equal(y, 5, 'expected Y');
+        assert.equal(size, 103, 'expected tile size');
+    });
+
+    s3.putTile(3, 6, 5, png, function (err) {
+        s3.removeAllListeners('putTile');
+        assert.ifError(err);
+        assert.equal(s3._stats.put - put, 1, 'stats +1 put');
+        assert.equal(s3._stats.noop - noop, 0, 'stats +0 noop');
+        assert.equal(s3._stats.blocked - blocked, 1, 'stats +1 blocked');
     });
 });
 
