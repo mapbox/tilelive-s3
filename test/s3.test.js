@@ -393,7 +393,7 @@ tape('stopWriting (stats)', function(assert) {
     s3.stopWriting(function(err) {
         console.log = origlog;
         assert.ifError(err);
-        assert.equal(stdout.length, 16, 'reports stats');
+        assert.equal(stdout.length, 17, 'reports stats');
         delete process.env.TILELIVE_S3_STATS;
         assert.end();
     });
