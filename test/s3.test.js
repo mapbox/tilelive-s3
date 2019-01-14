@@ -897,13 +897,14 @@ tape('put events (blocked)', function(assert) {
     var noop = s3._stats.noop;
     var blocked = s3._stats.blocked;
 
-    assert.plan(8)
+    assert.plan(9)
 
-    s3.on('putTile', function (z, x, y, size) {
+    s3.on('putTile', function (z, x, y, size, deltaRatio) {
         assert.equal(z, 3, 'expected Z');
         assert.equal(x, 6, 'expected X');
         assert.equal(y, 5, 'expected Y');
         assert.equal(size, 103, 'expected tile size');
+        assert.ok((deltaRatio >= 0.124546550) && (deltaRatio <= 0.124546559), 'expected deltaRatio');
     });
 
     s3.putTile(3, 6, 5, png, function (err) {
