@@ -14,6 +14,17 @@ npm install @mapbox/tilelive-s3
  - libpng
  - node >= 0.10
 
+Parameters
+==========
+
+Tilelive-S3's behaviour can be tweaked by passing through extra URL parameters. For example: `s3://mybucket/path?timeout=10000`
+
+* `timeout`: sets the HTTP timeout in milliseconds (default 2000)
+* `acl`: sets the AWS access control (default `private`). Choose `public-read` for publicly readable objects.
+* `region`: sets the partition region (eg `cn-north-1`)
+* `events`: if `true`, causes events to be emitted
+* `sse`, `ssekmid`, `expires`, `cacheControl`: passed onto URI object
+
 Tests
 =====
 
