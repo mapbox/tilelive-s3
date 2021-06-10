@@ -1,6 +1,6 @@
 {
   "name": "@mapbox/tilelive-s3",
-  "version": "7.0.2-dev1",
+  "version": "7.0.2-dev2",
   "dependencies": {
     "@mapbox/s3urls": "^1.5.3",
     "@mapbox/tiletype": "^0.3.0",
